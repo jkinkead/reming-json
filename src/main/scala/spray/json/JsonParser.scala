@@ -31,107 +31,40 @@ object JsonParser {
     extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
 }
 
-class JsonParser(input: ParserInput) {
+/** Common methods shared between the default parser and the pull parser. */
+abstract class ParserBase(input: ParserInput) {
   import JsonParser.ParsingException
-
-  private[this] val sb = new JStringBuilder
-  private[this] var cursorChar: Char = input.nextChar()
-  private[this] var jsValue: JsValue = _
-
-  def parseJsValue(): JsValue = {
-    ws()
-    `value`()
-    jsValue
-  }
-
-  ////////////////////// GRAMMAR ////////////////////////
 
   private final val EOI = '\uFFFF' // compile-time constant
 
-  // http://tools.ietf.org/html/rfc4627#section-2.1
-  private def `value`(): Unit = {
-    val mark = input.cursor
-    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value", mark)
-    (cursorChar: @switch) match {
-      case 'f' => simpleValue(`false`(), JsFalse)
-      case 'n' => simpleValue(`null`(), JsNull)
-      case 't' => simpleValue(`true`(), JsTrue)
-      case '{' => advance(); `object`()
-      case '[' => advance(); `array`()
-      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
-      case '"' => `string`(); jsValue = JsString(sb.toString)
-      case _ => fail("JSON Value")
-    }
-  }
+  private val sb = new JStringBuilder
 
-  private def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
-  private def `null`() = advance() && ch('u') && ch('l') && ws('l')
-  private def `true`() = advance() && ch('r') && ch('u') && ws('e')
+  protected[json] var cursorChar: Char = _
 
-  // http://tools.ietf.org/html/rfc4627#section-2.2
-  private def `object`(): Unit = {
-    ws()
-    @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
-      `string`()
-      require(':')
-      ws()
-      val key = sb.toString
-      `value`()
-      val nextMap = map.updated(key, jsValue)
-      if (ws(',')) members(nextMap) else nextMap
-    }
-    var map = Map.empty[String, JsValue]
-    if (cursorChar != '}') map = members(map)
-    require('}')
-    ws()
-    jsValue = JsObject(map)
-  }
+  ////////////////////// GRAMMAR ////////////////////////
 
-  // http://tools.ietf.org/html/rfc4627#section-2.3
-  private def `array`(): Unit = {
-    ws()
-    val list = Vector.newBuilder[JsValue]
-    @tailrec def values(): Unit = {
-      `value`()
-      list += jsValue
-      if (ws(',')) values()
-    }
-    if (cursorChar != ']') values()
-    require(']')
-    ws()
-    jsValue = JsArray(list.result())
-  }
+  protected def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
+  protected def `null`() = advance() && ch('u') && ch('l') && ws('l')
+  protected def `true`() = advance() && ch('r') && ch('u') && ws('e')
 
-  // http://tools.ietf.org/html/rfc4627#section-2.4
-  private def `number`() = {
-    val start = input.cursor
-    ch('-')
-    `int`()
-    `frac`()
-    `exp`()
-    jsValue = JsNumber(input.sliceCharArray(start, input.cursor))
-    ws()
-  }
-
-  private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits()
-  private def `frac`(): Unit = if (ch('.')) oneOrMoreDigits()
-  private def `exp`(): Unit = if (ch('e') || ch('E')) { ch('-') || ch('+'); oneOrMoreDigits() }
-
-  private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
-  @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits()
-
-  private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9' && advance()
-
-  // http://tools.ietf.org/html/rfc4627#section-2.5
-  private def `string`(): Unit = {
+  /** Reads a string from the input. Used by both object reading and value reading code.
+    * See http://tools.ietf.org/html/rfc4627#section-2.5
+    */
+  protected def `string`(): String = {
     require('"')
     sb.setLength(0)
     while (`char`()) cursorChar = input.nextUtf8Char()
     require('"')
     ws()
+    sb.toString()
   }
 
-  private def `char`() =
+  /** Attempts to read a character from the input, and appends it to the internal buffer. This is
+    * meant to be called from within a string - it handles escaping, and stops at an unescaped
+    * quote.
+    * @return true if a character was appended
+    */
+  private def `char`(): Boolean =
     // simple bloom-filter that quick-matches the most frequent case of characters that are ok to append
     // (it doesn't match control chars, EOI, '"', '?', '\', 'b' and certain higher, non-ASCII chars)
     if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
@@ -141,7 +74,11 @@ class JsonParser(input: ParserInput) {
       case c => (c >= ' ') && appendSB(c)
     }
 
-  private def `escaped`() = {
+  /** Reads an escaped character from the input, and appends it to the buffer.  This assumes the
+    * backslash has already been read.
+    * @return true if a character was appended
+    */
+  private def `escaped`(): Boolean = {
     def hexValue(c: Char): Int =
       if ('0' <= c && c <= '9') c - '0'
       else if ('a' <= c && c <= 'f') c - 87
@@ -169,19 +106,43 @@ class JsonParser(input: ParserInput) {
     }
   }
 
-  @tailrec private def ws(): Unit =
+  // http://tools.ietf.org/html/rfc4627#section-2.4
+  protected def `number`(): BigDecimal = {
+    val start = input.cursor
+    ch('-')
+    `int`()
+    `frac`()
+    `exp`()
+    val end = input.cursor
+    ws()
+    BigDecimal(input.sliceCharArray(start, end))
+  }
+
+  private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits()
+  private def `frac`(): Unit = if (ch('.')) oneOrMoreDigits()
+  private def `exp`(): Unit = if (ch('e') || ch('E')) { ch('-') || ch('+'); oneOrMoreDigits() }
+
+  private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
+  @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits()
+
+  private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9' && advance()
+
+  /** Skips all whitespace under the cursor. */
+  protected def ws(): Unit =
     // fast test whether cursorChar is one of " \n\r\t"
-    if (((1L << cursorChar) & ((cursorChar - 64) >> 31) & 0x100002600L) != 0L) { advance(); ws() }
+    while (((1L << cursorChar) & ((cursorChar - 64) >> 31) & 0x100002600L) != 0L) { advance() }
 
-  ////////////////////////// HELPERS //////////////////////////
-
-  private def ch(c: Char): Boolean = if (cursorChar == c) { advance(); true } else false
-  private def ws(c: Char): Boolean = if (ch(c)) { ws(); true } else false
-  private def advance(): Boolean = { cursorChar = input.nextChar(); true }
+  ////////////////////////// PRIVATE HELPERS ////////////////////////////
   private def appendSB(c: Char): Boolean = { sb.append(c); true }
-  private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
-  private def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
+  ////////////////////////// PROTECTED HELPERS //////////////////////////
+
+  protected def ch(c: Char): Boolean = if (cursorChar == c) { advance(); true } else false
+  protected def ws(c: Char): Boolean = if (ch(c)) { ws(); true } else false
+  protected def advance(): Boolean = { cursorChar = input.nextChar(); true }
+  protected def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
+
+  protected def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
     val ParserInput.Line(lineNr, col, text) = input.getLine(cursor)
     val summary = {
       val unexpected =
@@ -196,6 +157,72 @@ class JsonParser(input: ParserInput) {
       s"\n$sanitizedText\n${" " * (col-1)}^\n"
     }
     throw new ParsingException(summary, detail)
+  }
+}
+
+class JsonParser(input: ParserInput) extends ParserBase(input) {
+  private[this] var jsValue: JsValue = _
+
+  def parseJsValue(): JsValue = {
+    advance()
+    ws()
+    `value`()
+    jsValue
+  }
+
+  ////////////////////// GRAMMAR ////////////////////////
+
+  private final val EOI = '\uFFFF' // compile-time constant
+
+  // http://tools.ietf.org/html/rfc4627#section-2.1
+  private[json] def `value`(): Unit = {
+    val mark = input.cursor
+    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value", mark)
+    (cursorChar: @switch) match {
+      case 'f' => simpleValue(`false`(), JsFalse)
+      case 'n' => simpleValue(`null`(), JsNull)
+      case 't' => simpleValue(`true`(), JsTrue)
+      case '{' => advance(); `object`()
+      case '[' => advance(); `array`()
+      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' =>
+        val n = `number`()
+        jsValue = JsNumber(n)
+      case '"' => val s = `string`(); jsValue = JsString(s)
+      case _ => fail("JSON Value")
+    }
+  }
+
+  // http://tools.ietf.org/html/rfc4627#section-2.2
+  private def `object`(): Unit = {
+    ws()
+    @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
+      val key = `string`()
+      require(':')
+      ws()
+      `value`()
+      val nextMap = map.updated(key, jsValue)
+      if (ws(',')) members(nextMap) else nextMap
+    }
+    var map = Map.empty[String, JsValue]
+    if (cursorChar != '}') map = members(map)
+    require('}')
+    ws()
+    jsValue = JsObject(map)
+  }
+
+  // http://tools.ietf.org/html/rfc4627#section-2.3
+  private def `array`(): Unit = {
+    ws()
+    val list = Vector.newBuilder[JsValue]
+    @tailrec def values(): Unit = {
+      `value`()
+      list += jsValue
+      if (ws(',')) values()
+    }
+    if (cursorChar != ']') values()
+    require(']')
+    ws()
+    jsValue = JsArray(list.result())
   }
 }
 
