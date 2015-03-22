@@ -47,13 +47,31 @@ trait JsonPrinter extends (JsValue => String) {
       case JsTrue      => sb.append("true")
       case JsFalse     => sb.append("false")
       case JsNumber(x) => sb.append(x)
-      case JsString(x) => printString(x, sb)
+      case JsString(x) => JsonPrinter.printString(x, sb)
       case _           => throw new IllegalStateException
     }
   }
 
-  protected def printString(s: String, sb: JStringBuilder) {
-    import JsonPrinter._
+  def printSeq[A](iterable: Iterable[A], printSeparator: => Unit)(f: A => Unit) {
+    var first = true
+    iterable.foreach { a =>
+      if (first) first = false else printSeparator
+      f(a)
+    }
+  }
+}
+
+object JsonPrinter {
+  def requiresEncoding(c: Char): Boolean =
+    // from RFC 4627
+    // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
+    c match {
+      case '"'  => true
+      case '\\' => true
+      case c    => c < 0x20
+    }
+
+  def printString(s: String, sb: JStringBuilder) {
     @tailrec def firstToBeEncoded(ix: Int = 0): Int =
       if (ix == s.length) -1 else if (requiresEncoding(s.charAt(ix))) ix else firstToBeEncoded(ix + 1)
 
@@ -84,23 +102,4 @@ trait JsonPrinter extends (JsValue => String) {
     }
     sb.append('"')
   }
-  
-  protected def printSeq[A](iterable: Iterable[A], printSeparator: => Unit)(f: A => Unit) {
-    var first = true
-    iterable.foreach { a =>
-      if (first) first = false else printSeparator
-      f(a)
-    }
-  }
-}
-
-object JsonPrinter {
-  def requiresEncoding(c: Char): Boolean =
-    // from RFC 4627
-    // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
-    c match {
-      case '"'  => true
-      case '\\' => true
-      case c    => c < 0x20
-    }
 }

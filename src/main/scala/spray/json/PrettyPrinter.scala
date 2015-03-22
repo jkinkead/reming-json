@@ -41,7 +41,7 @@ trait PrettyPrinter extends JsonPrinter {
     sb.append("{\n")    
     printSeq(members, sb.append(",\n")) { m =>
       printIndent(sb, indent + Indent)
-      printString(m._1, sb)
+      JsonPrinter.printString(m._1, sb)
       sb.append(": ")
       print(m._2, sb, indent + Indent)
     }

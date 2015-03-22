@@ -11,11 +11,15 @@ import scala.util.{ Failure, Success, Try }
   * arrays.
   */
 trait StandardStreamFormats {
-  private[json] type JSR[T] = JsonStreamReader[T] // simple alias for reduced verbosity
+  private[json] type JSF[T] = JsonStreamFormat[T] // simple alias for reduced verbosity
 
-  implicit def optionFormat[T : JsonStreamReader] = new OptionFormat[T]
+  implicit def optionFormat[T : JSF] = new OptionFormat[T]
 
-  class OptionFormat[T : JSR] extends JSR[Option[T]] {
+  class OptionFormat[T : JSF] extends JSF[Option[T]] {
+    override def write(value: Option[T], printer: JsonStreamPrinter): Unit = value match {
+      case Some(v) => printer.print(v)
+      case None => printer.printNull()
+    }
     override def read(parser: PullParser) = if (parser.maybeReadNull()) {
       None
     } else {
@@ -23,8 +27,12 @@ trait StandardStreamFormats {
     }
   }
 
-  implicit def eitherFormat[A : JSR, B : JSR] = new JSR[Either[A, B]] {
-    def read(parser: PullParser) = {
+  implicit def eitherFormat[A : JSF, B : JSF] = new JSF[Either[A, B]] {
+    override def write(value: Either[A, B], printer: JsonStreamPrinter): Unit = value match {
+      case Left(a) => printer.print(a)
+      case Right(b) => printer.print(b)
+    }
+    override def read(parser: PullParser) = {
       (parser.read()(safeReader[A]), parser.read()(safeReader[B])) match {
         case (Success(a), _: Failure[_]) => Left(a)
         case (_: Failure[_], Success(b)) => Right(b)
@@ -34,28 +42,50 @@ trait StandardStreamFormats {
     }
   }
   
-  implicit def tuple1Format[A :JSR] = new JSR[Tuple1[A]] {
-    def read(parser: PullParser) = Tuple1(parser.read[A])
+  implicit def tuple1Format[A :JSF] = new JSF[Tuple1[A]] {
+    override def write(value: Tuple1[A], printer: JsonStreamPrinter): Unit = printer.print(value._1)
+    override def read(parser: PullParser) = Tuple1(parser.read[A])
   }
   
-  implicit def tuple2Format[A :JSR, B :JSR] = new JSR[(A, B)] {
-    def read(parser: PullParser) = {
+  implicit def tuple2Format[A :JSF, B :JSF] = new JSF[(A, B)] {
+    override def write(value: (A, B), printer: JsonStreamPrinter): Unit = {
+      printer.startArray()
+      printer.printArrayItem(value._1)
+      printer.printArrayItem(value._2)
+      printer.endArray()
+    }
+    override def read(parser: PullParser) = {
       val result = (parser.startArray[A], parser.readArrayItem[B])
       parser.endArray
       result
     }
   }
   
-  implicit def tuple3Format[A :JSR, B :JSR, C :JSR] = new JSR[(A, B, C)] {
-    def read(parser: PullParser) = {
+  implicit def tuple3Format[A :JSF, B :JSF, C :JSF] = new JSF[(A, B, C)] {
+    override def write(value: (A, B, C), printer: JsonStreamPrinter): Unit = {
+      printer.startArray()
+      printer.printArrayItem(value._1)
+      printer.printArrayItem(value._2)
+      printer.printArrayItem(value._3)
+      printer.endArray()
+    }
+    override def read(parser: PullParser) = {
       val result = (parser.startArray[A], parser.readArrayItem[B], parser.readArrayItem[C])
       parser.endArray
       result
     }
   }
   
-  implicit def tuple4Format[A :JSR, B :JSR, C :JSR, D :JSR] = new JSR[(A, B, C, D)] {
-    def read(parser: PullParser) = {
+  implicit def tuple4Format[A :JSF, B :JSF, C :JSF, D :JSF] = new JSF[(A, B, C, D)] {
+    override def write(value: (A, B, C, D), printer: JsonStreamPrinter): Unit = {
+      printer.startArray()
+      printer.printArrayItem(value._1)
+      printer.printArrayItem(value._2)
+      printer.printArrayItem(value._3)
+      printer.printArrayItem(value._4)
+      printer.endArray()
+    }
+    override def read(parser: PullParser) = {
       val result = (
         parser.startArray[A],
         parser.readArrayItem[B],
@@ -67,9 +97,18 @@ trait StandardStreamFormats {
     }
   }
   
-  implicit def tuple5Format[A :JSR, B :JSR, C :JSR, D :JSR, E :JSR] = {
-    new JSR[(A, B, C, D, E)] {
-      def read(parser: PullParser) = {
+  implicit def tuple5Format[A :JSF, B :JSF, C :JSF, D :JSF, E :JSF] = {
+    new JSF[(A, B, C, D, E)] {
+      override def write(value: (A, B, C, D, E), printer: JsonStreamPrinter): Unit = {
+        printer.startArray()
+        printer.printArrayItem(value._1)
+        printer.printArrayItem(value._2)
+        printer.printArrayItem(value._3)
+        printer.printArrayItem(value._4)
+        printer.printArrayItem(value._5)
+        printer.endArray()
+      }
+      override def read(parser: PullParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],
@@ -83,9 +122,19 @@ trait StandardStreamFormats {
     }
   }
   
-  implicit def tuple6Format[A :JSR, B :JSR, C :JSR, D :JSR, E :JSR, F: JSR] = {
-    new JSR[(A, B, C, D, E, F)] {
-      def read(parser: PullParser) = {
+  implicit def tuple6Format[A :JSF, B :JSF, C :JSF, D :JSF, E :JSF, F: JSF] = {
+    new JSF[(A, B, C, D, E, F)] {
+      override def write(value: (A, B, C, D, E, F), printer: JsonStreamPrinter): Unit = {
+        printer.startArray()
+        printer.printArrayItem(value._1)
+        printer.printArrayItem(value._2)
+        printer.printArrayItem(value._3)
+        printer.printArrayItem(value._4)
+        printer.printArrayItem(value._5)
+        printer.printArrayItem(value._6)
+        printer.endArray()
+      }
+      override def read(parser: PullParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],
@@ -100,9 +149,20 @@ trait StandardStreamFormats {
     }
   }
   
-  implicit def tuple7Format[A :JSR, B :JSR, C :JSR, D :JSR, E :JSR, F: JSR, G: JSR] = {
-    new JSR[(A, B, C, D, E, F, G)] {
-      def read(parser: PullParser) = {
+  implicit def tuple7Format[A :JSF, B :JSF, C :JSF, D :JSF, E :JSF, F: JSF, G: JSF] = {
+    new JSF[(A, B, C, D, E, F, G)] {
+      override def write(value: (A, B, C, D, E, F, G), printer: JsonStreamPrinter): Unit = {
+        printer.startArray()
+        printer.printArrayItem(value._1)
+        printer.printArrayItem(value._2)
+        printer.printArrayItem(value._3)
+        printer.printArrayItem(value._4)
+        printer.printArrayItem(value._5)
+        printer.printArrayItem(value._6)
+        printer.printArrayItem(value._7)
+        printer.endArray()
+      }
+      override def read(parser: PullParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],

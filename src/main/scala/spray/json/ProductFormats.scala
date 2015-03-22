@@ -17,6 +17,8 @@
 package spray.json
 
 import java.lang.reflect.Modifier
+
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 /**
@@ -63,28 +65,6 @@ trait ProductFormats extends ProductFormatsInstances {
       case _ => deserializationError("Object expected in field '" + fieldName + "'")
     }
   }
-
-  protected def extractFieldNames(classManifest: ClassManifest[_]): Array[String] = {
-    val clazz = classManifest.erasure
-    try {
-      // copy methods have the form copy$default$N(), we need to sort them in order, but must account for the fact
-      // that lexical sorting of ...8(), ...9(), ...10() is not correct, so we extract N and sort by N.toInt
-      val copyDefaultMethods = clazz.getMethods.filter(_.getName.startsWith("copy$default$")).sortBy(
-        _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
-      val fields = clazz.getDeclaredFields.filterNot { f =>
-        f.getName.startsWith("$") || Modifier.isTransient(f.getModifiers) || Modifier.isStatic(f.getModifiers)
-      }
-      if (copyDefaultMethods.length != fields.length)
-        sys.error("Case class " + clazz.getName + " declares additional fields")
-      if (fields.zip(copyDefaultMethods).exists { case (f, m) => f.getType != m.getReturnType })
-        sys.error("Cannot determine field order of case class " + clazz.getName)
-      fields.map(f => ProductFormats.unmangle(f.getName))
-    } catch {
-      case NonFatal(ex) => throw new RuntimeException("Cannot automatically determine case class field names and order " +
-        "for '" + clazz.getName + "', please use the 'jsonFormat' overload with explicit field name specification", ex)
-    }
-  }
-
 }
 
 object ProductFormats {
@@ -108,6 +88,27 @@ object ProductFormats {
 
   private def unmangle(name: String) = operators.foldLeft(name) { case (n, (mangled, unmangled)) =>
     if (n.indexOf(mangled) >= 0) n.replace(mangled, unmangled) else n
+  }
+
+  private[json] def extractFieldNames(classManifest: ClassTag[_]): Array[String] = {
+    val clazz = classManifest.runtimeClass
+    try {
+      // copy methods have the form copy$default$N(), we need to sort them in order, but must account for the fact
+      // that lexical sorting of ...8(), ...9(), ...10() is not correct, so we extract N and sort by N.toInt
+      val copyDefaultMethods = clazz.getMethods.filter(_.getName.startsWith("copy$default$")).sortBy(
+        _.getName.drop("copy$default$".length).takeWhile(_ != '(').toInt)
+      val fields = clazz.getDeclaredFields.filterNot { f =>
+        f.getName.startsWith("$") || Modifier.isTransient(f.getModifiers) || Modifier.isStatic(f.getModifiers)
+      }
+      if (copyDefaultMethods.length != fields.length)
+        sys.error("Case class " + clazz.getName + " declares additional fields")
+      if (fields.zip(copyDefaultMethods).exists { case (f, m) => f.getType != m.getReturnType })
+        sys.error("Cannot determine field order of case class " + clazz.getName)
+      fields.map(f => ProductFormats.unmangle(f.getName))
+    } catch {
+      case NonFatal(ex) => throw new RuntimeException("Cannot automatically determine case class field names and order " +
+        "for '" + clazz.getName + "', please use the 'jsonFormat' overload with explicit field name specification", ex)
+    }
   }
 }
 

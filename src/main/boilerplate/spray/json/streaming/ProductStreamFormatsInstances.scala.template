@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package spray.json
+package spray.json.streaming
+
+import spray.json.ProductFormats
 
 import scala.reflect.{ classTag, ClassTag }
 
-trait ProductFormatsInstances { self: ProductFormats with StandardFormats =>
+trait ProductStreamFormatsInstances { self: ProductStreamFormats with StandardStreamFormats =>
 [#  // Case classes with 1 parameters
 
-  def jsonFormat1[[#P1 :JF#], T <: Product :ClassTag](construct: ([#P1#]) => T): RootJsonFormat[T] = {
+  def jsonStreamFormat1[[#P1 :JSF#], T <: Product :ClassTag](construct: ([#P1#]) => T): JsonStreamFormat[T] = {
     val Array([#p1#]) = ProductFormats.extractFieldNames(classTag[T])
-    jsonFormat(construct, [#p1#])
+    jsonStreamFormat(construct, [#p1#])
   }
-  def jsonFormat[[#P1 :JF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): RootJsonFormat[T] = new RootJsonFormat[T]{
-    def write(p: T) = {
-      val fields = new collection.mutable.ListBuffer[(String, JsValue)]
-      fields.sizeHint(1 * 2)
-      [#fields ++= productElement##2Field[P1](fieldName1, p, 0)#
+  def jsonStreamFormat[[#P1 :JSF#], T <: Product](construct: ([#P1#]) => T, [#fieldName1: String#]): JsonStreamFormat[T] = new JsonStreamFormat[T]{
+    def write(p: T, printer: JsonStreamPrinter): Unit = {
+      printer.startObject()
+      [#writeProductElement[P1](fieldName1, p, 0, printer)#
       ]
-      JsObject(fields: _*)
+      printer.endObject()
     }
-    def read(value: JsValue) = {
-      [#val p1V = fromField[P1](value, fieldName1)#
+    def read(parser: PullParser): T = {
+      parser.startObject()
+      [#val p1V = parser.readField[P1](fieldName1)#
       ]
-      construct([#p1V#])
+      parser.endObject()
+      construct([#readObjectValue(p1V)#])
     }
   }#
-
-
 ]
 }

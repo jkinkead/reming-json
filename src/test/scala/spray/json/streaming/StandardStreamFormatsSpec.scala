@@ -1,9 +1,8 @@
 package spray.json.streaming
 
-import spray.json.DeserializationException
-import spray.json.JsonParser.ParsingException
-
 import org.specs2.mutable._
+
+import java.io.StringWriter
 
 class StandardStreamFormatsSpec extends Specification {
   import DefaultStreamProtocol._
@@ -12,8 +11,18 @@ class StandardStreamFormatsSpec extends Specification {
     "read None" in {
       PullParser.read[Option[String]]("null") === None
     }
+    "write None" in {
+      val sw = new StringWriter
+      PrettyStreamPrinter.printTo[Option[String]](sw, None)
+      sw.toString === "null"
+    }
     "read Some" in {
       PullParser.read[Option[String]](""""Exists"""") === Some("Exists")
+    }
+    "write Some" in {
+      val sw = new StringWriter
+      PrettyStreamPrinter.printTo[Option[String]](sw, Some("foo"))
+      sw.toString === """"foo""""
     }
   }
   "Either format" should {
@@ -38,6 +47,11 @@ class StandardStreamFormatsSpec extends Specification {
   "Tuple3 format" should {
     "read values" in {
       PullParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") mustEqual (22, 1.0, "str")
+    }
+    "write values" in {
+      val sw = new StringWriter
+      PrettyStreamPrinter.printTo(sw, (22, 1.0, "str"))
+      sw.toString mustEqual """[22, 1.0, "str"]"""
     }
   }
   "Tuple4 format" should {

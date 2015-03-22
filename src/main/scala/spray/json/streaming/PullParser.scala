@@ -30,7 +30,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   private final val EOI = '\uFFFF'
 
   /** The mapping of object keys to handler functions for the current object. */
-  private var fieldHandlers: mutable.Map[String, ObjectValue[_]] = _
+  private var fieldValueHolders: mutable.Map[String, ObjectValue[_]] = _
 
   /** Throw a DeserializationException with the given error. */
   private def fail(target: String): Nothing = {
@@ -175,7 +175,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     */
   def startObject(): Unit = {
     if (cursorChar == '{') {
-      fieldHandlers = mutable.HashMap.empty
+      fieldValueHolders = mutable.HashMap.empty
       advance()
       ws()
     } else {
@@ -186,24 +186,24 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   /** Registers a handler for a given object key. If not called within parsing an object, behavior
     * is undefined.
     */
-  def readField[T](key: String)(implicit fieldHandler: JsonStreamReader[T]): ObjectValue[T] = {
-    val handler = new ObjectValue(key, fieldHandler)
-    fieldHandlers(key) = handler
-    handler
+  def readField[T](key: String)(implicit fieldReader: JsonStreamReader[T]): ObjectValue[T] = {
+    val valueHolder = new ObjectValue(key, fieldReader)
+    fieldValueHolders(key) = valueHolder
+    valueHolder
   }
 
   /** Finishes parsing an object. This will call any handlers registered for field names. */
   def endObject(): Unit = {
     // Copy the current handler map reference, in case one of them wants to parse an object.
-    val handlers = fieldHandlers
-    handlers.values foreach { _.setDefault() }
+    val holders = fieldValueHolders
+    holders.values foreach { _.setDefault() }
     if (cursorChar != '}') {
       do {
         val key = `string`()
         require(':')
         ws()
-        handlers.get(key) match {
-          case Some(handler) => handler.readValue(this)
+        holders.get(key) match {
+          case Some(holder) => holder.readValue(this)
           case None =>
             // Skip the next value in the input.
             // TODO: Skip value in a streaming way!!!
