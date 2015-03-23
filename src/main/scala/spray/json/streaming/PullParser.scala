@@ -152,8 +152,9 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     startArrayInternal()
     val self = this
     new Iterator[T]() {
+      var hasNextCached: Option[Boolean] = None
       var isFirst = true
-      override def hasNext(): Boolean = {
+      override def hasNext(): Boolean = hasNextCached getOrElse {
         val atEnd = ws(']')
         if (!atEnd) {
           // Require a comma if this isn't the first element.
@@ -163,10 +164,23 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
           }
           isFirst = false
         }
+        hasNextCached = Some(!atEnd)
         !atEnd
       }
 
-      override def next(): T = handler.read(self)
+      override def next(): T = {
+        hasNextCached = None
+        handler.read(self)
+      }
+    }
+  }
+
+  private def startObjectInternal(): Unit = {
+    if (cursorChar == '{') {
+      advance()
+      ws()
+    } else {
+      fail("start of non-null object")
     }
   }
 
@@ -174,13 +188,8 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     * @throws DeserializationException if there isn't a start of an object in the stream
     */
   def startObject(): Unit = {
-    if (cursorChar == '{') {
-      fieldValueHolders = mutable.HashMap.empty
-      advance()
-      ws()
-    } else {
-      fail("start of non-null object")
-    }
+    startObjectInternal()
+    fieldValueHolders = mutable.HashMap.empty
   }
 
   /** Registers a handler for a given object key. If not called within parsing an object, behavior
@@ -199,11 +208,12 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     holders.values foreach { _.setDefault() }
     if (cursorChar != '}') {
       do {
-        val key = `string`()
+        val key = string()
         require(':')
         ws()
         holders.get(key) match {
-          case Some(holder) => holder.readValue(this)
+          case Some(holder) =>
+            holder.readValue(this)
           case None =>
             // Skip the next value in the input.
             // TODO: Skip value in a streaming way!!!
@@ -216,5 +226,40 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     }
     require('}')
     ws()
+  }
+
+  /** Reads an object with same-typed values into an iterator. If additional methods are called on
+    * this parser before the returned iterator is exhausted, behavior is undefined.
+    * @param T the type of the values of the object
+    */
+  def readObject[T]()(implicit handler: JsonStreamReader[T]): Iterator[(String, T)] = {
+    startObjectInternal()
+    val self = this
+    new Iterator[(String, T)]() {
+      var hasNextCached: Option[Boolean] = None
+      var isFirst = true
+      override def hasNext(): Boolean = hasNextCached getOrElse {
+        val atEnd = ws('}')
+        if (!atEnd) {
+          // Require a comma if this isn't the first element.
+          if (!isFirst) {
+            require(',')
+            ws()
+          }
+          isFirst = false
+        }
+        hasNextCached = Some(!atEnd)
+        !atEnd
+      }
+
+      override def next(): (String, T) = {
+        val key = string()
+        require(':')
+        ws()
+        val value = handler.read(self)
+        hasNextCached = None
+        (key -> value)
+      }
+    }
   }
 }

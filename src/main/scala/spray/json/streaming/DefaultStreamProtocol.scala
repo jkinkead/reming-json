@@ -4,6 +4,7 @@ package spray.json.streaming
 trait DefaultStreamProtocol
   extends BasicStreamFormats
   with StandardStreamFormats
+  with CollectionStreamFormats
   with ProductStreamFormats
 
 object DefaultStreamProtocol extends DefaultStreamProtocol
