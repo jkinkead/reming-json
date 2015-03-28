@@ -27,10 +27,10 @@ class StandardStreamFormatsSpec extends Specification {
   }
   "Either format" should {
     "read Right" in {
-      PullParser.read[Either[String, Int]]("123") === Right(123)
+      PullParser.read[Either[String, Int]]("[1, 123]") === Right(123)
     }
     "read Left" in {
-      PullParser.read[Either[String, Int]](""""str"""") === Left("str")
+      PullParser.read[Either[String, Int]]("""[0, "str"]""") === Left("str")
     }
   }
 
