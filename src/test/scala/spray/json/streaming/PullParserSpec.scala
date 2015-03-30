@@ -1,7 +1,6 @@
 package spray.json.streaming
 
 import spray.json.DeserializationException
-import spray.json.JsonParser.ParsingException
 
 import org.specs2.mutable._
 
@@ -98,7 +97,7 @@ class PullParserSpec extends Specification {
       val parser = PullParser.withInput("""{"a" : "string" """)
       import DefaultStreamProtocol._
       parser.startObject()
-      parser.endObject() must throwA[ParsingException]
+      parser.endObject() must throwA[DeserializationException]
     }
     "fail on other input" in {
       PullParser.withInput("false").startObject() must throwA[DeserializationException]

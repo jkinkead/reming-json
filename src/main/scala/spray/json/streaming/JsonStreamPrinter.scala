@@ -5,9 +5,11 @@ import spray.json.{ serializationError, JsonPrinter }
 import java.io.PrintWriter
 import java.lang.{ StringBuilder => JavaStringBuilder }
 
+import scala.annotation.tailrec
+
 /** Printer used for streaming. */
 abstract class JsonStreamPrinter(writer: PrintWriter) {
-  def printNull(): Unit = writer.print("null")
+  def printNull(): Unit = writer.write("null")
   def printBoolean(value: Boolean): Unit = writer.print(value)
 
   // Direct numeric serialization (no need to go through BigDecimal)
@@ -30,10 +32,61 @@ abstract class JsonStreamPrinter(writer: PrintWriter) {
 
   def printBigDecimal(value: BigDecimal): Unit = writer.print(value)
 
+  def requiresEncoding(c: Char): Boolean = {
+    // from RFC 4627
+    // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
+    c match {
+      case '"'  => true
+      case '\\' => true
+      case c    => c < 0x20
+    }
+  }
+
   def printString(value: String): Unit = {
-    val escapedString = new JavaStringBuilder(value.length + 10)
-    JsonPrinter.printString(value, escapedString)
-    writer.print(escapedString)
+    @tailrec def firstToBeEncoded(ix: Int = 0): Int = {
+      if (ix == value.length) {
+        -1
+      } else if (requiresEncoding(value.charAt(ix))) {
+        ix
+      } else {
+        firstToBeEncoded(ix + 1)
+      }
+    }
+
+    writer.write('"')
+    firstToBeEncoded() match {
+      case -1 => writer.write(value)
+      case first =>
+        writer.write(value, 0, first)
+        @tailrec def append(ix: Int): Unit =
+          if (ix < value.length) {
+            value.charAt(ix) match {
+              case c if !requiresEncoding(c) => writer.write(c)
+              case '"' => writer.write("\\\"")
+              case '\\' => writer.write("\\\\")
+              case '\b' => writer.write("\\b")
+              case '\f' => writer.write("\\f")
+              case '\n' => writer.write("\\n")
+              case '\r' => writer.write("\\r")
+              case '\t' => writer.write("\\t")
+              case x if x <= 0xF =>
+                writer.write("\\u000")
+                writer.write(Integer.toHexString(x))
+              case x if x <= 0xFF =>
+                writer.write("\\u00")
+                writer.write(Integer.toHexString(x))
+              case x if x <= 0xFFF =>
+                writer.write("\\u0")
+                writer.write(Integer.toHexString(x))
+              case x =>
+                writer.write("\\u")
+                writer.write(Integer.toHexString(x))
+            }
+            append(ix + 1)
+          }
+        append(first)
+    }
+    writer.write('"')
   }
 
   def print[T](value: T)(implicit jsonWriter: JsonStreamWriter[T]): Unit = {

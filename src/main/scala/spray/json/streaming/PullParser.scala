@@ -1,15 +1,27 @@
 package spray.json.streaming
 
 import spray.json.{ deserializationError, JsonParser, ParserBase, ParserInput }
+import spray.json.ParserInput.CharIteratorBasedParserInput
 
 import java.lang.{ StringBuilder => JavaStringBuilder }
 
 import scala.annotation.switch
 import scala.collection.mutable
+import scala.io.Source
 
 object PullParser {
   def read[T](input: ParserInput)(implicit reader: JsonStreamReader[T]): T = {
     reader.read(withInput(input))
+  }
+  def read[T](source: Source)(implicit reader: JsonStreamReader[T]): T = {
+    reader.read(withSource(source))
+  }
+
+  /** @return an initialized pull parser for the given input */
+  def withSource(source: Source): PullParser = {
+    val parser = new PullParser(new CharIteratorBasedParserInput(source))
+    parser.start()
+    parser
   }
 
   /** @return an initialized pull parser for the given input */
@@ -32,28 +44,10 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   /** The mapping of object keys to handler functions for the current object. */
   private var fieldValueHolders: mutable.Map[String, ObjectValue[_]] = _
 
-  /** Throw a DeserializationException with the given error. */
-  private def fail(target: String): Nothing = {
-    val cursor = input.cursor
-    val ParserInput.Line(lineNr, col, text) = input.getLine(cursor)
-    val summary = {
-      val unexpected = if (cursorChar != EOI) {
-        val c = if (Character.isISOControl(cursorChar)) {
-          "\\u%04x" format cursorChar.toInt
-        } else {
-          cursorChar.toString
-        }
-        s"character '$c'"
-      } else {
-        "end-of-input"
-      }
-      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), " +
-        s"expected $target"
-    }
-    val detail = {
-      val sanitizedText = text.map(c => if (Character.isISOControl(c)) '?' else c)
-      s"\n$sanitizedText\n${" " * (col - 1)}^\n"
-    }
+  /** Throw a DeserializationException instead of ParsingException, since parsing is synonymous with
+    * deserialization.
+    */
+  override def failWithException(summary: String, detail: String): Nothing = {
     if (detail.isEmpty) {
       deserializationError(s"$summary")
     } else {

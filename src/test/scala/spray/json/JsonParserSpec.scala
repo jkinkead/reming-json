@@ -79,19 +79,19 @@ class JsonParserSpec extends Specification {
         try JsonParser(input) catch { case e: JsonParser.ParsingException => e.getMessage }
 
       errorMessage("""[null, 1.23 {"key":true } ]""") ===
-        """Unexpected character '{' at input index 12 (line 1, position 13), expected ']':
+        """Unexpected character '{' at (line 1, position 13), expected ']':
           |[null, 1.23 {"key":true } ]
           |            ^
           |""".stripMargin
 
       errorMessage("""[null, 1.23, {  key":true } ]""") ===
-        """Unexpected character 'k' at input index 16 (line 1, position 17), expected '"':
+        """Unexpected character 'k' at (line 1, position 17), expected '"':
           |[null, 1.23, {  key":true } ]
           |                ^
           |""".stripMargin
 
       errorMessage("""{"a}""") ===
-        """Unexpected end-of-input at input index 4 (line 1, position 5), expected '"':
+        """Unexpected end-of-input at (line 1, position 5), expected '"':
           |{"a}
           |    ^
           |""".stripMargin

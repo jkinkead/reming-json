@@ -108,24 +108,43 @@ abstract class ParserBase(input: ParserInput) {
 
   // http://tools.ietf.org/html/rfc4627#section-2.4
   protected def `number`(): BigDecimal = {
-    val start = input.cursor
-    ch('-')
-    `int`()
-    `frac`()
-    `exp`()
-    val end = input.cursor
+    val sign = if (ch('-')) {
+      Seq('-')
+    } else {
+      Seq.empty
+    }
+    val chars = sign ++ `int`() ++ `frac`() ++ `exp`()
     ws()
-    BigDecimal(input.sliceCharArray(start, end))
+    BigDecimal(chars.toArray)
   }
 
-  private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits()
-  private def `frac`(): Unit = if (ch('.')) oneOrMoreDigits()
-  private def `exp`(): Unit = if (ch('e') || ch('E')) { ch('-') || ch('+'); oneOrMoreDigits() }
+  private def `int`(): Seq[Char] = if (!ch('0')) oneOrMoreDigits() else Seq('0')
+  private def `frac`(): Seq[Char] = if (ch('.')) '.' +: oneOrMoreDigits() else Seq.empty
+  private def `exp`(): Seq[Char] = if (ch('e') || ch('E')) {
+    val sign = if (ch('-')) {
+      Some('-')
+    } else if (ch('+')) {
+      Some('+')
+    } else {
+      None
+    }
+    Seq('e') ++ sign ++ oneOrMoreDigits()
+  } else {
+    Seq.empty
+  }
 
-  private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
-  @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits()
+  private def oneOrMoreDigits(): Seq[Char] = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
+  @tailrec private def zeroOrMoreDigits(soFar: Seq[Char] = Seq.empty): Seq[Char] = {
+    if (!DIGIT()) {
+      soFar
+    } else {
+      val current = cursorChar
+      advance()
+      zeroOrMoreDigits(soFar :+ current)
+    }
+  }
 
-  private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9' && advance()
+  private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9'
 
   /** Skips all whitespace under the cursor. */
   protected def ws(): Unit =
@@ -142,20 +161,25 @@ abstract class ParserBase(input: ParserInput) {
   protected def advance(): Boolean = { cursorChar = input.nextChar(); true }
   protected def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
-  protected def fail(target: String, cursor: Int = input.cursor, errorChar: Char = cursorChar): Nothing = {
-    val ParserInput.Line(lineNr, col, text) = input.getLine(cursor)
+  protected def fail(target: String): Nothing = {
+    val ParserInput.Line(lineNr, col, text) = input.currLine
     val summary = {
       val unexpected =
-        if (errorChar != EOI) {
-          val c = if (Character.isISOControl(errorChar)) "\\u%04x" format errorChar.toInt else errorChar.toString
+        if (cursorChar != EOI) {
+          val c = if (Character.isISOControl(cursorChar)) "\\u%04x" format cursorChar.toInt else cursorChar.toString
           s"character '$c'"
         } else "end-of-input"
-      s"Unexpected $unexpected at input index $cursor (line $lineNr, position $col), expected $target"
+      s"Unexpected $unexpected at (line $lineNr, position $col), expected $target"
     }
     val detail = {
       val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
       s"\n$sanitizedText\n${" " * (col-1)}^\n"
     }
+    failWithException(summary, detail)
+  }
+
+  /** Throws an exception appropriate to the parser. */
+  protected def failWithException(summary: String, detail: String): Nothing = {
     throw new ParsingException(summary, detail)
   }
 }
@@ -176,8 +200,7 @@ class JsonParser(input: ParserInput) extends ParserBase(input) {
 
   // http://tools.ietf.org/html/rfc4627#section-2.1
   private[json] def `value`(): Unit = {
-    val mark = input.cursor
-    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value", mark)
+    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value")
     (cursorChar: @switch) match {
       case 'f' => simpleValue(`false`(), JsFalse)
       case 'n' => simpleValue(`null`(), JsNull)
@@ -239,11 +262,7 @@ trait ParserInput {
    */
   def nextUtf8Char(): Char
 
-  def cursor: Int
-  def length: Int
-  def sliceString(start: Int, end: Int): String
-  def sliceCharArray(start: Int, end: Int): Array[Char]
-  def getLine(index: Int): ParserInput.Line
+  def currLine: ParserInput.Line
 }
 
 object ParserInput {
@@ -256,10 +275,12 @@ object ParserInput {
 
   case class Line(lineNr: Int, column: Int, text: String)
 
+  /** Parent class for parser input with a numeric cursor. */
   abstract class DefaultParserInput extends ParserInput {
     protected var _cursor: Int = -1
-    def cursor = _cursor
-    def getLine(index: Int): Line = {
+    /** @return the line that encloses the given cursor index */
+    def currLine: Line = {
+      val index = _cursor
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
         nextUtf8Char() match {
@@ -267,10 +288,9 @@ object ParserInput {
           case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
           case c => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
-      val savedCursor = _cursor
       _cursor = -1
       val line = rec(ix = 0, lineStartIx = 0, lineNr = 1)
-      _cursor = savedCursor
+      _cursor = index
       line
     }
   }
@@ -316,10 +336,6 @@ object ParserInput {
         else ErrorChar
       } else EOI
     }
-    def length = bytes.length
-    def sliceString(start: Int, end: Int) = new String(bytes, start, end - start, UTF8)
-    def sliceCharArray(start: Int, end: Int) =
-      UTF8.decode(ByteBuffer.wrap(java.util.Arrays.copyOfRange(bytes, start, end))).array()
   }
 
   class StringBasedParserInput(string: String) extends DefaultParserInput {
@@ -328,13 +344,6 @@ object ParserInput {
       if (_cursor < string.length) string.charAt(_cursor) else EOI
     }
     def nextUtf8Char() = nextChar()
-    def length = string.length
-    def sliceString(start: Int, end: Int) = string.substring(start, end)
-    def sliceCharArray(start: Int, end: Int) = {
-      val chars = new Array[Char](end - start)
-      string.getChars(start, end, chars, 0)
-      chars
-    }
   }
 
   class CharArrayBasedParserInput(chars: Array[Char]) extends DefaultParserInput {
@@ -343,8 +352,21 @@ object ParserInput {
       if (_cursor < chars.length) chars(_cursor) else EOI
     }
     def nextUtf8Char() = nextChar()
-    def length = chars.length
-    def sliceString(start: Int, end: Int) = new String(chars, start, end - start)
-    def sliceCharArray(start: Int, end: Int) = java.util.Arrays.copyOfRange(chars, start, end)
+  }
+
+  /** Input wrapping a character iterator (like a Source). */
+  class CharIteratorBasedParserInput(chars: Iterator[Char]) extends ParserInput {
+    override def currLine: Line = {
+      // TODO IMPLEMENT
+      Line(0, 0, "")
+    }
+    override def nextChar(): Char = {
+      if (chars.hasNext) {
+        chars.next
+      } else {
+        EOI
+      }
+    }
+    override def nextUtf8Char() = nextChar()
   }
 }
