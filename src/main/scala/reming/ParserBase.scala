@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 import java.lang.{ StringBuilder => JStringBuilder }
 import java.nio.{ CharBuffer, ByteBuffer }
@@ -29,7 +29,7 @@ abstract class ParserBase(input: ParserInput) {
 
   private val sb = new JStringBuilder
 
-  protected[json] var cursorChar: Char = _
+  protected[reming] var cursorChar: Char = _
 
   ////////////////////// GRAMMAR ////////////////////////
 

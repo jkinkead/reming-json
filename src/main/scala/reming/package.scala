@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package spray.json
-
-package object streaming {
+package object reming {
   def jsonStreamReader[T](implicit reader: JsonStreamReader[T]) = reader
   def jsonStreamWriter[T](implicit writer: JsonStreamWriter[T]) = writer
   def jsonStreamFormat[T](implicit format: JsonStreamFormat[T]) = format
@@ -25,7 +23,7 @@ package object streaming {
   def deserializationError(msg: String, cause: Throwable = null) = throw new DeserializationException(msg, cause)
   def serializationError(msg: String) = throw new SerializationException(msg)
 }
-package streaming {
+package reming {
   class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
   class SerializationException(msg: String) extends RuntimeException(msg)
 }

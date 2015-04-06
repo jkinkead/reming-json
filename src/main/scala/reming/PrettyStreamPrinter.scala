@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 import java.io.{ PrintWriter, Writer }
 

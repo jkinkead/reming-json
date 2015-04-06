@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 import java.lang.{ StringBuilder => JavaStringBuilder }
 
@@ -77,7 +77,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   }
 
   /** Starts a parse. */
-  private[streaming] def start(): Unit = advance()
+  private[reming] def start(): Unit = advance()
 
   /** Looks for a null in the stream. If the next item in the stream is a null literal, this will
     * read it and return true; else, it leaves the stream as-is and returns false.

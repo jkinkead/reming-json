@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 /** Class to hold values that were requested from an object. Uninitialized until the parser advances
   * past the specified obeject key.
   * @param key the object key this was stored in
   */
-private[streaming] class ObjectValue[T](val key: String, handler: JsonStreamReader[T]) {
+private[reming] class ObjectValue[T](val key: String, handler: JsonStreamReader[T]) {
   /** Set when the parse completes. Will be Some(Some(T)) if the key was present in the object,
     * Some(None) if it was missing.
     */
@@ -32,14 +32,14 @@ private[streaming] class ObjectValue[T](val key: String, handler: JsonStreamRead
   }
 
   /** Called when the parser sees the key this was registered for. */
-  private[streaming] def readValue(parser: PullParser): Unit = {
+  private[reming] def readValue(parser: PullParser): Unit = {
     parsedValue = Some(Some(handler.read(parser)))
   }
 
   /** Called at the start of parsing. This indicates that the parser read the object this was
     * registered for, but didn't (yet) see the key.
     */
-  private[streaming] def setDefault(): Unit = {
+  private[reming] def setDefault(): Unit = {
     parsedValue = Some(None)
   }
 

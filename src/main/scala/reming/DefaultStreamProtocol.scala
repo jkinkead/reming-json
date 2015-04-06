@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 /** Provides all the predefined JsonStreamFormats. */
 trait DefaultStreamProtocol

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 /** Provides the streaming formats for numbers, String, and Symbol. Note that the number readers are
   * non-strict in that they will happily round floating-point numbers to Integers.

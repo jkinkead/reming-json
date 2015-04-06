@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 import scala.util.{ Failure, Success, Try }
 
@@ -25,7 +25,7 @@ import scala.util.{ Failure, Success, Try }
   * for Right.  Tuple1 serializes as a direct literal, while Tuple{2-7} serialize as arrays.
   */
 trait StandardStreamFormats { self: BasicStreamFormats =>
-  private[json] type JSF[T] = JsonStreamFormat[T] // simple alias for reduced verbosity
+  private[reming] type JSF[T] = JsonStreamFormat[T] // simple alias for reduced verbosity
 
   implicit def optionFormat[T : JSF] = new OptionFormat[T]
 

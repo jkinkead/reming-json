@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package spray.json.streaming
+package reming
 
 import java.lang.reflect.Modifier
 
@@ -47,7 +47,7 @@ object ProductFormats {
       if (n.indexOf(mangled) >= 0) n.replace(mangled, unmangled) else n
   }
 
-  private[json] def extractFieldNames(classManifest: ClassTag[_]): Array[String] = {
+  private[reming] def extractFieldNames(classManifest: ClassTag[_]): Array[String] = {
     val clazz = classManifest.runtimeClass
     try {
       // copy methods have the form copy$default$N(), we need to sort them in order, but must account for the fact
