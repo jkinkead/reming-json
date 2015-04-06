@@ -1,6 +1,21 @@
-package spray.json.streaming
+/*
+ * Original implementation (C) 2009-2011 Mathias Doenitz
+ * Adapted to reming in 2015 by Jesse Kinkead
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import spray.json.{ serializationError, JsonPrinter }
+package spray.json.streaming
 
 import java.io.PrintWriter
 import java.lang.{ StringBuilder => JavaStringBuilder }
@@ -36,9 +51,9 @@ abstract class JsonStreamPrinter(writer: PrintWriter) {
     // from RFC 4627
     // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
     c match {
-      case '"'  => true
+      case '"' => true
       case '\\' => true
-      case c    => c < 0x20
+      case c => c < 0x20
     }
   }
 

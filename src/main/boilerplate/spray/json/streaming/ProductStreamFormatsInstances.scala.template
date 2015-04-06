@@ -16,8 +16,6 @@
 
 package spray.json.streaming
 
-import spray.json.ProductFormats
-
 import scala.reflect.{ classTag, ClassTag }
 
 trait ProductStreamFormatsInstances { self: ProductStreamFormats with StandardStreamFormats =>

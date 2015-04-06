@@ -1,14 +1,12 @@
-name := "spray-json"
+name := "reming-json"
 
 version := "1.3.1"
 
-organization := "io.spray"
+organization := "com.github.jkinkead"
 
-organizationHomepage := Some(new URL("http://spray.io"))
+description := "An AST-free Scala library for JSON marshalling, based on spray-json"
 
-description := "A Scala library for easy and idiomatic JSON (de)serialization"
-
-homepage := Some(new URL("https://github.com/spray/spray-json"))
+homepage := Some(new URL("https://github.com/jkinkead/spray-json"))
 
 startYear := Some(2011)
 
@@ -26,37 +24,13 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
 )
 
-(scalacOptions in doc) ++= Seq("-doc-title", name.value + " " + version.value)
-
 // generate boilerplate
 Boilerplate.settings
 
-// OSGi settings
-osgiSettings
+// TODO: Publishing.
 
-OsgiKeys.exportPackage := Seq("""spray.json.*;version="${Bundle-Version}"""")
+// crossScalaVersions := Seq("2.10.4", "2.11.2")
 
-OsgiKeys.importPackage <<= scalaVersion { sv => Seq("""scala.*;version="$<range;[==,=+);%s>"""".format(sv)) }
+// scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
 
-OsgiKeys.importPackage ++= Seq("""spray.json;version="${Bundle-Version}"""", "*")
-
-OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package")
-
-///////////////
-// publishing
-///////////////
-
-crossScalaVersions := Seq("2.10.4", "2.11.2")
-
-scalaBinaryVersion <<= scalaVersion(sV => if (CrossVersion.isStable(sV)) CrossVersion.binaryScalaVersion(sV) else sV)
-
-publishMavenStyle := true
-
-publishTo := Some {
-    "spray repo" at {
-      // public uri is repo.spray.io, we use an SSH tunnel to the nexus here
-      "http://localhost:42424/content/repositories/" + {
-        if (version.value.trim.endsWith("SNAPSHOT")) "snapshots/" else "releases/"
-      }
-    }
-  }
+// publishMavenStyle := true

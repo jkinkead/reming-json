@@ -1,7 +1,20 @@
-package spray.json.streaming
+/*
+ * Copyright (C) 2015 by Jesse Kinkead
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import spray.json.{ deserializationError, JsonParser, ParserBase, ParserInput }
-import spray.json.ParserInput.CharIteratorBasedParserInput
+package spray.json.streaming
 
 import java.lang.{ StringBuilder => JavaStringBuilder }
 
@@ -10,16 +23,24 @@ import scala.collection.mutable
 import scala.io.Source
 
 object PullParser {
-  def read[T](input: ParserInput)(implicit reader: JsonStreamReader[T]): T = {
-    reader.read(withInput(input))
+  def read[T](input: String)(implicit reader: JsonStreamReader[T]): T = {
+    reader.read(withString(input))
   }
+
   def read[T](source: Source)(implicit reader: JsonStreamReader[T]): T = {
     reader.read(withSource(source))
   }
 
   /** @return an initialized pull parser for the given input */
   def withSource(source: Source): PullParser = {
-    val parser = new PullParser(new CharIteratorBasedParserInput(source))
+    val parser = new PullParser(new ParserInput.CharIteratorBasedParserInput(source))
+    parser.start()
+    parser
+  }
+
+  /** @return an initialized pull parser for the given string */
+  def withString(string: String): PullParser = {
+    val parser = new PullParser(new ParserInput.StringBasedParserInput(string))
     parser.start()
     parser
   }
@@ -206,15 +227,8 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
         require(':')
         ws()
         holders.get(key) match {
-          case Some(holder) =>
-            holder.readValue(this)
-          case None =>
-            // Skip the next value in the input.
-            // TODO: Skip value in a streaming way!!!
-            val jsonParser = new JsonParser(input)
-            jsonParser.cursorChar = cursorChar
-            jsonParser.value()
-            cursorChar = jsonParser.cursorChar
+          case Some(holder) => holder.readValue(this)
+          case None => skipNextValue()
         }
       } while (ws(','))
     }
@@ -254,6 +268,32 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
         hasNextCached = None
         (key -> value)
       }
+    }
+  }
+
+  /** Skips the next value in the JSON stream. */
+  def skipNextValue(): Unit = {
+    (cursorChar: @switch) match {
+      case 'f' => `false`()
+      case 'n' => `null`()
+      case 't' => `true`()
+      case '{' =>
+        startObjectInternal()
+        endObject()
+      case '[' =>
+        startArrayInternal()
+        while (cursorChar != ']') {
+          skipNextValue()
+          if (cursorChar != ']') {
+            require(',')
+            ws()
+          }
+        }
+        advance()
+        ws()
+      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
+      case '"' => `string`()
+      case _ => fail("JSON Value")
     }
   }
 }

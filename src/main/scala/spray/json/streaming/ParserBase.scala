@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2014 Mathias Doenitz
+ * Original implementation (C) 2011 Mathias Doenitz
+ * Adapted to reming in 2015 by Jesse Kinkead
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +15,16 @@
  * limitations under the License.
  */
 
-package spray.json
+package spray.json.streaming
 
-import java.lang.{StringBuilder => JStringBuilder}
-import java.nio.{CharBuffer, ByteBuffer}
+import java.lang.{ StringBuilder => JStringBuilder }
+import java.nio.{ CharBuffer, ByteBuffer }
 import java.nio.charset.Charset
-import scala.annotation.{switch, tailrec}
+import scala.annotation.{ switch, tailrec }
 
-/**
- * Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
- */
-object JsonParser {
-  def apply(input: ParserInput): JsValue = new JsonParser(input).parseJsValue()
-
-  class ParsingException(val summary: String, val detail: String = "")
-    extends RuntimeException(if (summary.isEmpty) detail else if (detail.isEmpty) summary else summary + ":" + detail)
-}
-
-/** Common methods shared between the default parser and the pull parser. */
+/** Fast, no-dependency parser for JSON as defined by http://tools.ietf.org/html/rfc4627.
+  */
 abstract class ParserBase(input: ParserInput) {
-  import JsonParser.ParsingException
-
   private final val EOI = '\uFFFF' // compile-time constant
 
   private val sb = new JStringBuilder
@@ -70,7 +60,8 @@ abstract class ParserBase(input: ParserInput) {
     if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
     else cursorChar match {
       case '"' | EOI => false
-      case '\\' => advance(); `escaped`()
+      case '\\' =>
+        advance(); `escaped`()
       case c => (c >= ' ') && appendSB(c)
     }
 
@@ -101,7 +92,8 @@ abstract class ParserBase(input: ParserInput) {
       case 'n' => appendSB('\n')
       case 'r' => appendSB('\r')
       case 't' => appendSB('\t')
-      case 'u' => advance(); unicode()
+      case 'u' =>
+        advance(); unicode()
       case _ => fail("JSON escape sequence")
     }
   }
@@ -173,93 +165,24 @@ abstract class ParserBase(input: ParserInput) {
     }
     val detail = {
       val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
-      s"\n$sanitizedText\n${" " * (col-1)}^\n"
+      s"\n$sanitizedText\n${" " * (col - 1)}^\n"
     }
     failWithException(summary, detail)
   }
 
   /** Throws an exception appropriate to the parser. */
-  protected def failWithException(summary: String, detail: String): Nothing = {
-    throw new ParsingException(summary, detail)
-  }
-}
-
-class JsonParser(input: ParserInput) extends ParserBase(input) {
-  private[this] var jsValue: JsValue = _
-
-  def parseJsValue(): JsValue = {
-    advance()
-    ws()
-    `value`()
-    jsValue
-  }
-
-  ////////////////////// GRAMMAR ////////////////////////
-
-  private final val EOI = '\uFFFF' // compile-time constant
-
-  // http://tools.ietf.org/html/rfc4627#section-2.1
-  private[json] def `value`(): Unit = {
-    def simpleValue(matched: Boolean, value: JsValue) = if (matched) jsValue = value else fail("JSON Value")
-    (cursorChar: @switch) match {
-      case 'f' => simpleValue(`false`(), JsFalse)
-      case 'n' => simpleValue(`null`(), JsNull)
-      case 't' => simpleValue(`true`(), JsTrue)
-      case '{' => advance(); `object`()
-      case '[' => advance(); `array`()
-      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' =>
-        val n = `number`()
-        jsValue = JsNumber(n)
-      case '"' => val s = `string`(); jsValue = JsString(s)
-      case _ => fail("JSON Value")
-    }
-  }
-
-  // http://tools.ietf.org/html/rfc4627#section-2.2
-  private def `object`(): Unit = {
-    ws()
-    @tailrec def members(map: Map[String, JsValue]): Map[String, JsValue] = {
-      val key = `string`()
-      require(':')
-      ws()
-      `value`()
-      val nextMap = map.updated(key, jsValue)
-      if (ws(',')) members(nextMap) else nextMap
-    }
-    var map = Map.empty[String, JsValue]
-    if (cursorChar != '}') map = members(map)
-    require('}')
-    ws()
-    jsValue = JsObject(map)
-  }
-
-  // http://tools.ietf.org/html/rfc4627#section-2.3
-  private def `array`(): Unit = {
-    ws()
-    val list = Vector.newBuilder[JsValue]
-    @tailrec def values(): Unit = {
-      `value`()
-      list += jsValue
-      if (ws(',')) values()
-    }
-    if (cursorChar != ']') values()
-    require(']')
-    ws()
-    jsValue = JsArray(list.result())
-  }
+  protected def failWithException(summary: String, detail: String): Nothing
 }
 
 trait ParserInput {
-  /**
-   * Advance the cursor and get the next char.
-   * Since the char is required to be a 7-Bit ASCII char no decoding is required.
-   */
+  /** Advance the cursor and get the next char.
+    * Since the char is required to be a 7-Bit ASCII char no decoding is required.
+    */
   def nextChar(): Char
 
-  /**
-   * Advance the cursor and get the next char, which could potentially be outside
-   * of the 7-Bit ASCII range. Therefore decoding might be required.
-   */
+  /** Advance the cursor and get the next char, which could potentially be outside
+    * of the 7-Bit ASCII range. Therefore decoding might be required.
+    */
   def nextUtf8Char(): Char
 
   def currLine: ParserInput.Line
@@ -269,9 +192,9 @@ object ParserInput {
   private final val EOI = '\uFFFF' // compile-time constant
   private final val ErrorChar = '\uFFFD' // compile-time constant, universal UTF-8 replacement character '�'
 
-  implicit def apply(string: String): StringBasedParserInput = new StringBasedParserInput(string)
-  implicit def apply(chars: Array[Char]): CharArrayBasedParserInput = new CharArrayBasedParserInput(chars)
-  implicit def apply(bytes: Array[Byte]): ByteArrayBasedParserInput = new ByteArrayBasedParserInput(bytes)
+  def apply(string: String): StringBasedParserInput = new StringBasedParserInput(string)
+  def apply(chars: Array[Char]): CharArrayBasedParserInput = new CharArrayBasedParserInput(chars)
+  def apply(bytes: Array[Byte]): ByteArrayBasedParserInput = new ByteArrayBasedParserInput(bytes)
 
   case class Line(lineNr: Int, column: Int, text: String)
 
@@ -284,7 +207,8 @@ object ParserInput {
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
         nextUtf8Char() match {
-          case '\n' if index > ix => sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
+          case '\n' if index > ix =>
+            sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
           case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
           case c => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
@@ -297,10 +221,9 @@ object ParserInput {
 
   private val UTF8 = Charset.forName("UTF-8")
 
-  /**
-   * ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
-   * of the JSON input, without requiring a separate decoding step.
-   */
+  /** ParserInput reading directly off a byte array which is assumed to contain the UTF-8 encoded representation
+    * of the JSON input, without requiring a separate decoding step.
+    */
   class ByteArrayBasedParserInput(bytes: Array[Byte]) extends DefaultParserInput {
     private val byteBuffer = ByteBuffer.allocate(4)
     private val charBuffer = CharBuffer.allocate(1) // we currently don't support surrogate pairs!
