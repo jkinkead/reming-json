@@ -24,17 +24,17 @@ import scala.util.{ Failure, Success, Try }
   * otherwise. 'Either' serializes a two-element array, with the first element being 0 for Left, 1
   * for Right.  Tuple1 serializes as a direct literal, while Tuple{2-7} serialize as arrays.
   */
-trait StandardStreamFormats { self: BasicStreamFormats =>
-  private[reming] type JSF[T] = JsonStreamFormat[T] // simple alias for reduced verbosity
+trait StandardFormats { self: BasicFormats =>
+  private[reming] type JSF[T] = JsonFormat[T] // simple alias for reduced verbosity
 
   implicit def optionFormat[T : JSF] = new OptionFormat[T]
 
   class OptionFormat[T : JSF] extends JSF[Option[T]] {
-    override def write(value: Option[T], printer: JsonStreamPrinter): Unit = value match {
+    override def write(value: Option[T], printer: JsonPrinter): Unit = value match {
       case Some(v) => printer.print(v)
       case None => printer.printNull()
     }
-    override def read(parser: PullParser) = if (parser.maybeReadNull()) {
+    override def read(parser: JsonParser) = if (parser.maybeReadNull()) {
       None
     } else {
       Some(parser.read[T])
@@ -43,7 +43,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
 
   /** Format for Either. This is *NOT* compatible with spray-json. */
   implicit def eitherFormat[A : JSF, B : JSF] = new JSF[Either[A, B]] {
-    override def write(value: Either[A, B], printer: JsonStreamPrinter): Unit = {
+    override def write(value: Either[A, B], printer: JsonPrinter): Unit = {
       printer.startArray()
       value match {
         case Left(a) =>
@@ -55,7 +55,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
       }
       printer.endArray()
     }
-    override def read(parser: PullParser) = {
+    override def read(parser: JsonParser) = {
       val sigil = parser.startArray[Int]()
       val value = sigil match {
         case 0 => Left(parser.readArrayItem[A])
@@ -67,18 +67,18 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
   }
 
   implicit def tuple1Format[A : JSF] = new JSF[Tuple1[A]] {
-    override def write(value: Tuple1[A], printer: JsonStreamPrinter): Unit = printer.print(value._1)
-    override def read(parser: PullParser) = Tuple1(parser.read[A])
+    override def write(value: Tuple1[A], printer: JsonPrinter): Unit = printer.print(value._1)
+    override def read(parser: JsonParser) = Tuple1(parser.read[A])
   }
 
   implicit def tuple2Format[A : JSF, B : JSF] = new JSF[(A, B)] {
-    override def write(value: (A, B), printer: JsonStreamPrinter): Unit = {
+    override def write(value: (A, B), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
       printer.printArrayItem(value._2)
       printer.endArray()
     }
-    override def read(parser: PullParser) = {
+    override def read(parser: JsonParser) = {
       val result = (parser.startArray[A], parser.readArrayItem[B])
       parser.endArray
       result
@@ -86,14 +86,14 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
   }
 
   implicit def tuple3Format[A : JSF, B : JSF, C : JSF] = new JSF[(A, B, C)] {
-    override def write(value: (A, B, C), printer: JsonStreamPrinter): Unit = {
+    override def write(value: (A, B, C), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
       printer.printArrayItem(value._2)
       printer.printArrayItem(value._3)
       printer.endArray()
     }
-    override def read(parser: PullParser) = {
+    override def read(parser: JsonParser) = {
       val result = (parser.startArray[A], parser.readArrayItem[B], parser.readArrayItem[C])
       parser.endArray
       result
@@ -101,7 +101,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
   }
 
   implicit def tuple4Format[A : JSF, B : JSF, C : JSF, D : JSF] = new JSF[(A, B, C, D)] {
-    override def write(value: (A, B, C, D), printer: JsonStreamPrinter): Unit = {
+    override def write(value: (A, B, C, D), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
       printer.printArrayItem(value._2)
@@ -109,7 +109,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
       printer.printArrayItem(value._4)
       printer.endArray()
     }
-    override def read(parser: PullParser) = {
+    override def read(parser: JsonParser) = {
       val result = (
         parser.startArray[A],
         parser.readArrayItem[B],
@@ -123,7 +123,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
 
   implicit def tuple5Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF] = {
     new JSF[(A, B, C, D, E)] {
-      override def write(value: (A, B, C, D, E), printer: JsonStreamPrinter): Unit = {
+      override def write(value: (A, B, C, D, E), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)
         printer.printArrayItem(value._2)
@@ -132,7 +132,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
         printer.printArrayItem(value._5)
         printer.endArray()
       }
-      override def read(parser: PullParser) = {
+      override def read(parser: JsonParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],
@@ -148,7 +148,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
 
   implicit def tuple6Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF, F : JSF] = {
     new JSF[(A, B, C, D, E, F)] {
-      override def write(value: (A, B, C, D, E, F), printer: JsonStreamPrinter): Unit = {
+      override def write(value: (A, B, C, D, E, F), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)
         printer.printArrayItem(value._2)
@@ -158,7 +158,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
         printer.printArrayItem(value._6)
         printer.endArray()
       }
-      override def read(parser: PullParser) = {
+      override def read(parser: JsonParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],
@@ -175,7 +175,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
 
   implicit def tuple7Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF, F : JSF, G : JSF] = {
     new JSF[(A, B, C, D, E, F, G)] {
-      override def write(value: (A, B, C, D, E, F, G), printer: JsonStreamPrinter): Unit = {
+      override def write(value: (A, B, C, D, E, F, G), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)
         printer.printArrayItem(value._2)
@@ -186,7 +186,7 @@ trait StandardStreamFormats { self: BasicStreamFormats =>
         printer.printArrayItem(value._7)
         printer.endArray()
       }
-      override def read(parser: PullParser) = {
+      override def read(parser: JsonParser) = {
         val result = (
           parser.startArray[A],
           parser.readArrayItem[B],

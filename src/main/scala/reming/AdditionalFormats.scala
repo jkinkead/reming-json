@@ -23,18 +23,18 @@ import scala.reflect.ClassTag
 import scala.util.Try
 
 /** Provides formats and helpers. */
-trait AdditionalStreamFormats { self: BasicStreamFormats =>
+trait AdditionalFormats { self: BasicFormats =>
   // TODO(jkinkead): Add in format for spray JsValue.
   // TODO(jkinkead): Add in format for spray.JsonFormat.
   // TODO(jkinkead): Add in lift functions to turn Json{Writer,Reader} to JsonFormat?
 
   /** Builds a ChildFormat for class P that wraps an existing format for child class C. */
-  def childFormat[C <: P : ClassTag : JsonStreamFormat, P]: ChildFormat[C, P] = {
-    new ChildFormat(implicitly[JsonStreamFormat[C]])
+  def childFormat[C <: P : ClassTag : JsonFormat, P]: ChildFormat[C, P] = {
+    new ChildFormat(implicitly[JsonFormat[C]])
   }
 
   /** Builds a ParentFormat for class P serializing any number of child classes of P. */
-  def parentFormat[P](childFormats: ChildFormat[_ <: P, P]*): JsonStreamFormat[P] = {
+  def parentFormat[P](childFormats: ChildFormat[_ <: P, P]*): JsonFormat[P] = {
     new ParentFormat[P](childFormats)
   }
 
@@ -42,19 +42,19 @@ trait AdditionalStreamFormats { self: BasicStreamFormats =>
     * serialization, and exposes the runtime class of C, for use in ParentFormat.
     */
   class ChildFormat[C <: P : ClassTag, P](
-      childFormat: JsonStreamFormat[C]
-  ) extends JsonStreamFormat[P] {
+      childFormat: JsonFormat[C]
+  ) extends JsonFormat[P] {
     val childClass: Class[_] = implicitly[ClassTag[C]].runtimeClass
 
-    override def write(value: P, printer: JsonStreamPrinter): Unit = value match {
+    override def write(value: P, printer: JsonPrinter): Unit = value match {
       case value: C => childFormat.write(value, printer)
       case _ => serializationError("Incompatible type: " + value)
     }
-    override def read(parser: PullParser): P = childFormat.read(parser)
+    override def read(parser: JsonParser): P = childFormat.read(parser)
   }
 
   /** A format for a class P with multiple child implementations. */
-  class ParentFormat[P](formats: Iterable[ChildFormat[_ <: P, P]]) extends JsonStreamFormat[P] {
+  class ParentFormat[P](formats: Iterable[ChildFormat[_ <: P, P]]) extends JsonFormat[P] {
     private val formatsByClass: Map[Class[_], ChildFormat[_ <: P, P]] = {
       val result: Map[Class[_], ChildFormat[_ <: P, P]] =
         (formats map { f => f.childClass -> f }).toMap
@@ -64,10 +64,10 @@ trait AdditionalStreamFormats { self: BasicStreamFormats =>
       )
       result
     }
-    private val formatsByName: Map[String, JsonStreamFormat[P]] =
+    private val formatsByName: Map[String, JsonFormat[P]] =
       (formats map { f => f.childClass.getSimpleName -> f }).toMap
 
-    override def write(value: P, printer: JsonStreamPrinter): Unit = {
+    override def write(value: P, printer: JsonPrinter): Unit = {
       val clazz = value.getClass
       formatsByClass.get(clazz) map { format =>
         printer.startArray()
@@ -78,7 +78,7 @@ trait AdditionalStreamFormats { self: BasicStreamFormats =>
         serializationError("No format found for class " + value.getClass)
       }
     }
-    override def read(parser: PullParser): P = {
+    override def read(parser: JsonParser): P = {
       val name = parser.startArray[String]()
       val value = formatsByName.get(name) map { format =>
         parser.readArrayItem()(format)
@@ -93,9 +93,9 @@ trait AdditionalStreamFormats { self: BasicStreamFormats =>
   /** Lazy wrapper around serialization. Useful when you want to serialize (mutually) recursive
     * structures.
     */
-  def lazyFormat[T](format: => JsonStreamFormat[T]) = new JsonStreamFormat[T] {
+  def lazyFormat[T](format: => JsonFormat[T]) = new JsonFormat[T] {
     lazy val delegate = format;
-    override def write(value: T, printer: JsonStreamPrinter): Unit = delegate.write(value, printer)
-    override def read(parser: PullParser): T = delegate.read(parser)
+    override def write(value: T, printer: JsonPrinter): Unit = delegate.write(value, printer)
+    override def read(parser: JsonParser): T = delegate.read(parser)
   }
 }

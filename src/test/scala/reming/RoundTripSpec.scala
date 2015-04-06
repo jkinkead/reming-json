@@ -21,19 +21,19 @@ import java.io.StringWriter
 
 /** Tests the ability of the streaming API to consume its own output. */
 class RoundTripSpec extends Specification {
-  import DefaultStreamProtocol._
+  import DefaultProtocol._
 
   case class Inner(innerA: String, innerB: Option[Int])
   object Inner {
-    implicit val innerFormat = jsonStreamFormat2(Inner.apply)
+    implicit val innerFormat = jsonFormat2(Inner.apply)
   }
   case class Middle(a: Int, b: String, c: Seq[Int], d: Set[Inner])
   object Middle {
-    implicit val middleFormat = jsonStreamFormat4(Middle.apply)
+    implicit val middleFormat = jsonFormat4(Middle.apply)
   }
   case class Outer(outerA: Seq[Inner], outerB: Middle)
   object Outer {
-    implicit val outerFormat = jsonStreamFormat2(Outer.apply)
+    implicit val outerFormat = jsonFormat2(Outer.apply)
   }
 
   val testVal = Outer(
@@ -49,8 +49,8 @@ class RoundTripSpec extends Specification {
   "Printing -> Parsing round-trip" should {
     "work when using pretty printer" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, testVal)
-      PullParser.read[Outer](sw.toString) === testVal
+      PrettyPrinter.printTo(sw, testVal)
+      JsonParser.read[Outer](sw.toString) === testVal
     }
   }
 }

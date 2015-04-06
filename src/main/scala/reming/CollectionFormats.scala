@@ -20,71 +20,71 @@ package reming
 
 import scala.reflect.ClassTag
 
-trait CollectionStreamFormats {
-  implicit def arrayStreamFormat[T : JsonStreamFormat : ClassTag] = new JsonStreamFormat[Array[T]] {
-    override def write(value: Array[T], printer: JsonStreamPrinter): Unit = {
+trait CollectionFormats {
+  implicit def arrayFormat[T : JsonFormat : ClassTag] = new JsonFormat[Array[T]] {
+    override def write(value: Array[T], printer: JsonPrinter): Unit = {
       printer.startArray()
       value foreach printer.printArrayItem[T]
       printer.endArray()
     }
-    override def read(parser: PullParser): Array[T] = {
+    override def read(parser: JsonParser): Array[T] = {
       parser.readArray.toArray
     }
   }
 
   /** Serializes any map with string keys as as JS object. */
-  implicit def mapStreamFormat[T : JsonStreamFormat] = new JsonStreamFormat[Map[String, T]] {
-    override def write(map: Map[String, T], printer: JsonStreamPrinter): Unit = {
+  implicit def mapFormat[T : JsonFormat] = new JsonFormat[Map[String, T]] {
+    override def write(map: Map[String, T], printer: JsonPrinter): Unit = {
       printer.startObject()
       for ((key, value) <- map) printer.printField(key, value)
       printer.endObject()
     }
-    override def read(parser: PullParser): Map[String, T] = Map(parser.readObject.toSeq: _*)
+    override def read(parser: JsonParser): Map[String, T] = Map(parser.readObject.toSeq: _*)
   }
-  implicit def listStreamFormat[T : JsonStreamFormat] = viaSeq[List[T], T](seq => List(seq: _*))
+  implicit def listFormat[T : JsonFormat] = viaSeq[List[T], T](seq => List(seq: _*))
 
   // Immutable collection iterables.
   import collection.{ immutable => imm }
 
-  implicit def immIterableStreamFormat[T : JsonStreamFormat] =
+  implicit def immIterableFormat[T : JsonFormat] =
     viaSeq[imm.Iterable[T], T](seq => imm.Iterable(seq :_*))
-  implicit def immSeqStreamFormat[T : JsonStreamFormat] =
+  implicit def immSeqFormat[T : JsonFormat] =
     viaSeq[imm.Seq[T], T](seq => imm.Seq(seq :_*))
-  implicit def immIndexedSeqStreamFormat[T : JsonStreamFormat] =
+  implicit def immIndexedSeqFormat[T : JsonFormat] =
     viaSeq[imm.IndexedSeq[T], T](seq => imm.IndexedSeq(seq :_*))
-  implicit def immLinearSeqStreamFormat[T : JsonStreamFormat] =
+  implicit def immLinearSeqFormat[T : JsonFormat] =
     viaSeq[imm.LinearSeq[T], T](seq => imm.LinearSeq(seq :_*))
-  implicit def immSetStreamFormat[T : JsonStreamFormat] =
+  implicit def immSetFormat[T : JsonFormat] =
     viaSeq[imm.Set[T], T](seq => imm.Set(seq :_*))
 
-  implicit def vectorStreamFormat[T : JsonStreamFormat] =
+  implicit def vectorFormat[T : JsonFormat] =
     viaSeq[Vector[T], T](seq => Vector(seq: _*))
 
   import collection._
 
   // Base collection iterables.
-  implicit def iterableStreamFormat[T : JsonStreamFormat] =
+  implicit def iterableFormat[T : JsonFormat] =
     viaSeq[Iterable[T], T](seq => Iterable(seq: _*))
-  implicit def seqStreamFormat[T : JsonStreamFormat] =
+  implicit def seqFormat[T : JsonFormat] =
     viaSeq[Seq[T], T](seq => Seq(seq: _*))
-  implicit def indexedSeqStreamFormat[T : JsonStreamFormat] =
+  implicit def indexedSeqFormat[T : JsonFormat] =
     viaSeq[IndexedSeq[T], T](seq => IndexedSeq(seq: _*))
-  implicit def linearSeqStreamFormat[T : JsonStreamFormat]  =
+  implicit def linearSeqFormat[T : JsonFormat]  =
     viaSeq[LinearSeq[T], T](seq => LinearSeq(seq :_*))
-  implicit def setStreamFormat[T : JsonStreamFormat] =
+  implicit def setFormat[T : JsonFormat] =
     viaSeq[Set[T], T](seq => Set(seq :_*))
 
   /** Writes any iterable I of T as a JS array.
     * @param builder factory method to build an I from Seq[T]
     */
-  def viaSeq[I <: Iterable[T], T : JsonStreamFormat](builder: Seq[T] => I): JsonStreamFormat[I] = {
-    new JsonStreamFormat[I] {
-      override def write(value: I, printer: JsonStreamPrinter): Unit = {
+  def viaSeq[I <: Iterable[T], T : JsonFormat](builder: Seq[T] => I): JsonFormat[I] = {
+    new JsonFormat[I] {
+      override def write(value: I, printer: JsonPrinter): Unit = {
         printer.startArray()
         value foreach printer.printArrayItem[T]
         printer.endArray()
       }
-      override def read(parser: PullParser): I = builder(parser.readArray[T].toSeq)
+      override def read(parser: JsonParser): I = builder(parser.readArray[T].toSeq)
     }
   }
 }

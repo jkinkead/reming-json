@@ -19,17 +19,17 @@ import org.specs2.mutable._
 
 import java.io.StringWriter
 
-class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtocol {
+class CollectionFormatsSpec extends Specification with DefaultProtocol {
 
   "listFormat" should {
     val list = List(1, 2, 3)
     "serialize a List[Int] to an array" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, list)
+      PrettyPrinter.printTo(sw, list)
       sw.toString === "[1, 2, 3]"
     }
     "read a serialized int array" in {
-      PullParser.read[List[Int]]("[1,2,3]") === list
+      JsonParser.read[List[Int]]("[1,2,3]") === list
     }
   }
 
@@ -37,11 +37,11 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
     val array = Array(1, 2, 3)
     "serialize an Array[Int] to an int array" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, array)
+      PrettyPrinter.printTo(sw, array)
       sw.toString === "[1, 2, 3]"
     }
     "read a serialized int array" in {
-      PullParser.read[Array[Int]]("[1,2,3]") === array
+      JsonParser.read[Array[Int]]("[1,2,3]") === array
     }
   }
 
@@ -49,7 +49,7 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
     val map = Map("a" -> 1, "b" -> 2, "c" -> 3)
     "serialize a Map[String, Long] to an object" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, map)
+      PrettyPrinter.printTo(sw, map)
       sw.toString ===
         """{
           |  "a": 1,
@@ -58,19 +58,19 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
           |}""".stripMargin
     }
     "read an object with long values to a Map[String, Long]" in {
-      PullParser.read[Map[String, Long]]("""{"a":1,"c":3,"b":2}""") === map
+      JsonParser.read[Map[String, Long]]("""{"a":1,"c":3,"b":2}""") === map
     }
   }
 
   case class TestObject(a: String, b: Option[Int])
   object TestObject {
-    implicit val innerFormat = jsonStreamFormat2(TestObject.apply)
+    implicit val innerFormat = jsonFormat2(TestObject.apply)
   }
   "seq format" should {
     val seq = Seq(TestObject("a", None), TestObject("b", Some(1)))
     "serialize a seq of objects" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, seq)
+      PrettyPrinter.printTo(sw, seq)
       sw.toString ===
         """[{
           |  "a": "a"
@@ -80,7 +80,7 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
           |}]""".stripMargin
     }
     "read a serialized seq of objects" in {
-      PullParser.read[Seq[TestObject]]("""[{"a": "a"}, {"b": 1,"a":"b"}]""") === seq
+      JsonParser.read[Seq[TestObject]]("""[{"a": "a"}, {"b": 1,"a":"b"}]""") === seq
     }
   }
 
@@ -88,11 +88,11 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
     val set = Set(4, 5, 6)
     "serialize a Set[Int] to an array" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, set)
+      PrettyPrinter.printTo(sw, set)
       sw.toString === "[4, 5, 6]"
     }
     "read an array of numbers as a Set[Int]" in {
-      PullParser.read[Set[Int]]("[4,5,6]") === set
+      JsonParser.read[Set[Int]]("[4,5,6]") === set
     }
   }
 
@@ -100,11 +100,11 @@ class CollectionStreamFormatsSpec extends Specification with DefaultStreamProtoc
     val seq = collection.IndexedSeq(3, 2, 1)
     "serialize an IndexedSeq[Int] to an array" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, seq)
+      PrettyPrinter.printTo(sw, seq)
       sw.toString === "[3, 2, 1]"
     }
     "read an array of numbers as an IndexedSeq[Int]" in {
-      PullParser.read[IndexedSeq[Int]]("[3,2,1]") === seq
+      JsonParser.read[IndexedSeq[Int]]("[3,2,1]") === seq
     }
   }
 }

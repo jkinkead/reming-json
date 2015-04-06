@@ -22,32 +22,32 @@ import scala.annotation.switch
 import scala.collection.mutable
 import scala.io.Source
 
-object PullParser {
-  def read[T](input: String)(implicit reader: JsonStreamReader[T]): T = {
+object JsonParser {
+  def read[T](input: String)(implicit reader: JsonReader[T]): T = {
     reader.read(withString(input))
   }
 
-  def read[T](source: Source)(implicit reader: JsonStreamReader[T]): T = {
+  def read[T](source: Source)(implicit reader: JsonReader[T]): T = {
     reader.read(withSource(source))
   }
 
   /** @return an initialized pull parser for the given input */
-  def withSource(source: Source): PullParser = {
-    val parser = new PullParser(new ParserInput.CharIteratorBasedParserInput(source))
+  def withSource(source: Source): JsonParser = {
+    val parser = new JsonParser(new ParserInput.CharIteratorBasedParserInput(source))
     parser.start()
     parser
   }
 
   /** @return an initialized pull parser for the given string */
-  def withString(string: String): PullParser = {
-    val parser = new PullParser(new ParserInput.StringBasedParserInput(string))
+  def withString(string: String): JsonParser = {
+    val parser = new JsonParser(new ParserInput.StringBasedParserInput(string))
     parser.start()
     parser
   }
 
   /** @return an initialized pull parser for the given input */
-  def withInput(input: ParserInput): PullParser = {
-    val parser = new PullParser(input)
+  def withInput(input: ParserInput): JsonParser = {
+    val parser = new JsonParser(input)
     parser.start()
     parser
   }
@@ -57,7 +57,7 @@ object PullParser {
   * Public methods will throw DeserializationException if the expected value isn't next in the
   * input.
   */
-class PullParser(input: ParserInput) extends ParserBase(input) {
+class JsonParser(input: ParserInput) extends ParserBase(input) {
 
   // End-of-input sigil, forced to a compile-time constant.
   private final val EOI = '\uFFFF'
@@ -128,7 +128,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   }
 
   /** Reads a type from the stream. */
-  def read[T]()(implicit handler: JsonStreamReader[T]): T = handler.read(this)
+  def read[T]()(implicit handler: JsonReader[T]): T = handler.read(this)
 
   private def startArrayInternal(): Unit = {
     if (cursorChar == '[') {
@@ -142,13 +142,13 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   /** Start a JS array, and reads the first item.
     * @throws DeserializationException if there isn't a start of an array in the stream
     */
-  def startArray[T]()(implicit handler: JsonStreamReader[T]): T = {
+  def startArray[T]()(implicit handler: JsonReader[T]): T = {
     startArrayInternal()
     handler.read(this)
   }
 
   /** Read an item from an array. Behavior is undefined if not inside of an array when called. */
-  def readArrayItem[T]()(implicit handler: JsonStreamReader[T]): T = {
+  def readArrayItem[T]()(implicit handler: JsonReader[T]): T = {
     require(',')
     ws()
     handler.read(this)
@@ -163,7 +163,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   /** Reads an array into an iterator. If additional methods are called on this parser before the
     * returned iterator is exhausted, behavior is undefined.
     */
-  def readArray[T]()(implicit handler: JsonStreamReader[T]): Iterator[T] = {
+  def readArray[T]()(implicit handler: JsonReader[T]): Iterator[T] = {
     startArrayInternal()
     val self = this
     new Iterator[T]() {
@@ -210,7 +210,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
   /** Registers a handler for a given object key. If not called within parsing an object, behavior
     * is undefined.
     */
-  def readField[T](key: String)(implicit fieldReader: JsonStreamReader[T]): ObjectValue[T] = {
+  def readField[T](key: String)(implicit fieldReader: JsonReader[T]): ObjectValue[T] = {
     val valueHolder = new ObjectValue(key, fieldReader)
     fieldValueHolders(key) = valueHolder
     valueHolder
@@ -240,7 +240,7 @@ class PullParser(input: ParserInput) extends ParserBase(input) {
     * this parser before the returned iterator is exhausted, behavior is undefined.
     * @param T the type of the values of the object
     */
-  def readObject[T]()(implicit handler: JsonStreamReader[T]): Iterator[(String, T)] = {
+  def readObject[T]()(implicit handler: JsonReader[T]): Iterator[(String, T)] = {
     startObjectInternal()
     val self = this
     new Iterator[(String, T)]() {

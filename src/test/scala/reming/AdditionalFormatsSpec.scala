@@ -19,15 +19,15 @@ import org.specs2.mutable._
 
 import java.io.StringWriter
 
-class AdditionalStreamFormatsSpec extends Specification with DefaultStreamProtocol {
+class AdditionalFormatsSpec extends Specification with DefaultProtocol {
   sealed trait Parent
   case class Child1(a: String) extends Parent
   object Child1 {
-    implicit val child1Format = jsonStreamFormat1(Child1.apply)
+    implicit val child1Format = jsonFormat1(Child1.apply)
   }
   case class Child2(b: String, c: Int) extends Parent
   object Child2 {
-    implicit val child2Format = jsonStreamFormat2(Child2.apply)
+    implicit val child2Format = jsonFormat2(Child2.apply)
   }
 
   object Parent {
@@ -41,7 +41,7 @@ class AdditionalStreamFormatsSpec extends Specification with DefaultStreamProtoc
     val two: Parent = Child2("two", 2)
     "serialize the first child class" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, one)
+      PrettyPrinter.printTo(sw, one)
       sw.toString ===
         """["Child1", {
           |  "a": "one"
@@ -49,7 +49,7 @@ class AdditionalStreamFormatsSpec extends Specification with DefaultStreamProtoc
     }
     "serialize the second child class" in {
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, two)
+      PrettyPrinter.printTo(sw, two)
       sw.toString ===
         """["Child2", {
           |  "b": "two",
@@ -57,13 +57,13 @@ class AdditionalStreamFormatsSpec extends Specification with DefaultStreamProtoc
           |}]""".stripMargin
     }
     "read a serialized instance" in {
-      PullParser.read[Parent]("""["Child1",{"a":"value"}]""") === Child1("value")
+      JsonParser.read[Parent]("""["Child1",{"a":"value"}]""") === Child1("value")
     }
     "round-trip a Seq" in {
       val seq: Seq[Parent] = Seq(one, two)
       val sw = new StringWriter
-      PrettyStreamPrinter.printTo(sw, seq)
-      PullParser.read[Seq[Parent]](sw.toString) === seq
+      PrettyPrinter.printTo(sw, seq)
+      JsonParser.read[Seq[Parent]](sw.toString) === seq
     }
   }
 }

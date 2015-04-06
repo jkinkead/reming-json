@@ -19,27 +19,29 @@ package reming
 
 import java.io.{ PrintWriter, Writer }
 
-object CompactStreamPrinter {
-  def printTo[T](writer: Writer, value: T)(implicit jsonWriter: JsonStreamWriter[T]): Unit = {
+object PrettyPrinter {
+  def printTo[T](writer: Writer, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
     printTo(new PrintWriter(writer), value)
   }
-  def printTo[T](writer: PrintWriter, value: T)(implicit jsonWriter: JsonStreamWriter[T]): Unit = {
-    new CompactStreamPrinter(writer).print(value)
+  def printTo[T](writer: PrintWriter, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
+    new PrettyPrinter(writer).print(value)
   }
 }
 
-class CompactStreamPrinter(writer: PrintWriter) extends JsonStreamPrinter(writer) {
+class PrettyPrinter(writer: PrintWriter) extends JsonPrinter(writer) {
+  var indentLevel = 0
+  val Indent = 2
   var afterFirstItem = false
 
   override def startArray(): Unit = {
-    writer.write('[')
+    writer.print('[')
     afterFirstItem = false
   }
 
   /** Prints a field within an object. */
-  override def printArrayItem[T](value: T)(implicit itemWriter: JsonStreamWriter[T]): Unit = {
+  override def printArrayItem[T](value: T)(implicit itemWriter: JsonWriter[T]): Unit = {
     if (afterFirstItem) {
-      writer.write(',')
+      writer.print(", ")
     }
     afterFirstItem = true
     print(value)
@@ -47,34 +49,41 @@ class CompactStreamPrinter(writer: PrintWriter) extends JsonStreamPrinter(writer
 
   override def endArray(): Unit = {
     afterFirstItem = true
-    writer.write(']')
+    writer.print(']')
   }
 
   /** Prints a whole iterable as an array. */
-  override def printArray[T](values: Iterable[T])(implicit itemWriter: JsonStreamWriter[T]): Unit = {
+  override def printArray[T](values: Iterable[T])(implicit itemWriter: JsonWriter[T]): Unit = {
     startArray()
     for (value <- values) printArrayItem(value)
     endArray()
   }
 
   override def startObject(): Unit = {
-    writer.write('{')
+    writer.print("{\n")
+    indentLevel += 1
     afterFirstItem = false
   }
 
   /** Prints a field within an object. */
-  override def printField[T](key: String, value: T)(implicit fieldWriter: JsonStreamWriter[T]): Unit = {
+  override def printField[T](key: String, value: T)(implicit fieldWriter: JsonWriter[T]): Unit = {
     if (afterFirstItem) {
-      writer.write(',')
+      writer.print(",\n")
     }
     afterFirstItem = true
+    printIndent(indentLevel * Indent)
     printString(key)
-    writer.write(':')
+    writer.print(": ")
     print(value)
   }
 
   override def endObject(): Unit = {
     afterFirstItem = true
-    writer.write('}')
+    writer.print('\n')
+    indentLevel -= 1
+    printIndent(indentLevel * Indent)
+    writer.print('}')
   }
+
+  private def printIndent(indent: Int): Unit = for (_ <- 0 until indent) writer.print(' ')
 }

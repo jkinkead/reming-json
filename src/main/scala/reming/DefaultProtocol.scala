@@ -18,12 +18,12 @@
 
 package reming
 
-/** Provides all the predefined JsonStreamFormats. */
-trait DefaultStreamProtocol
-  extends BasicStreamFormats
-  with AdditionalStreamFormats
-  with StandardStreamFormats
-  with CollectionStreamFormats
-  with ProductStreamFormats
+/** Provides all the predefined JsonFormats. */
+trait DefaultProtocol
+  extends BasicFormats
+  with AdditionalFormats
+  with StandardFormats
+  with CollectionFormats
+  with ProductFormats
 
-object DefaultStreamProtocol extends DefaultStreamProtocol
+object DefaultProtocol extends DefaultProtocol

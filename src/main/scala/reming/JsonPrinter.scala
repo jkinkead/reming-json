@@ -23,7 +23,7 @@ import java.lang.{ StringBuilder => JavaStringBuilder }
 import scala.annotation.tailrec
 
 /** Printer used for streaming. */
-abstract class JsonStreamPrinter(writer: PrintWriter) {
+abstract class JsonPrinter(writer: PrintWriter) {
   def printNull(): Unit = writer.write("null")
   def printBoolean(value: Boolean): Unit = writer.print(value)
 
@@ -104,7 +104,7 @@ abstract class JsonStreamPrinter(writer: PrintWriter) {
     writer.write('"')
   }
 
-  def print[T](value: T)(implicit jsonWriter: JsonStreamWriter[T]): Unit = {
+  def print[T](value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
     jsonWriter.write(value, this)
   }
 
@@ -118,16 +118,16 @@ abstract class JsonStreamPrinter(writer: PrintWriter) {
   /** Prints an item in an array. Undefined behavior if called while not in the middle of printing
     * an array.
     */
-  def printArrayItem[T](value: T)(implicit itemWriter: JsonStreamWriter[T]): Unit
+  def printArrayItem[T](value: T)(implicit itemWriter: JsonWriter[T]): Unit
 
   /** Ends an array. Undefined behavior if called while not in the middle of printing an array. */
   def endArray(): Unit
 
-  def printArray[T](vals: Iterable[T])(implicit itemWriter: JsonStreamWriter[T]): Unit
+  def printArray[T](vals: Iterable[T])(implicit itemWriter: JsonWriter[T]): Unit
 
   def startObject(): Unit
 
-  def printField[T](key: String, value: T)(implicit fieldWriter: JsonStreamWriter[T]): Unit
+  def printField[T](key: String, value: T)(implicit fieldWriter: JsonWriter[T]): Unit
 
   def endObject(): Unit
 }

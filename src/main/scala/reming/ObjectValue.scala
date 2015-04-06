@@ -20,7 +20,7 @@ package reming
   * past the specified obeject key.
   * @param key the object key this was stored in
   */
-private[reming] class ObjectValue[T](val key: String, handler: JsonStreamReader[T]) {
+private[reming] class ObjectValue[T](val key: String, handler: JsonReader[T]) {
   /** Set when the parse completes. Will be Some(Some(T)) if the key was present in the object,
     * Some(None) if it was missing.
     */
@@ -28,11 +28,11 @@ private[reming] class ObjectValue[T](val key: String, handler: JsonStreamReader[
 
   /** @throws DeserializationException if called before parsedValue is set */
   private def getParsedValue: Option[T] = parsedValue getOrElse {
-    deserializationError("StreamFormat usage error: ParsedVal dereferenced before endObject")
+    deserializationError("Usage error: ParsedVal dereferenced before endObject")
   }
 
   /** Called when the parser sees the key this was registered for. */
-  private[reming] def readValue(parser: PullParser): Unit = {
+  private[reming] def readValue(parser: JsonParser): Unit = {
     parsedValue = Some(Some(handler.read(parser)))
   }
 

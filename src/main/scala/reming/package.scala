@@ -16,9 +16,9 @@
  */
 
 package object reming {
-  def jsonStreamReader[T](implicit reader: JsonStreamReader[T]) = reader
-  def jsonStreamWriter[T](implicit writer: JsonStreamWriter[T]) = writer
-  def jsonStreamFormat[T](implicit format: JsonStreamFormat[T]) = format
+  def jsonReader[T](implicit reader: JsonReader[T]) = reader
+  def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
+  def jsonFormat[T](implicit format: JsonFormat[T]) = format
 
   def deserializationError(msg: String, cause: Throwable = null) = throw new DeserializationException(msg, cause)
   def serializationError(msg: String) = throw new SerializationException(msg)
