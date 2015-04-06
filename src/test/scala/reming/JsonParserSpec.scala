@@ -18,7 +18,7 @@ package reming
 import org.scalatest.{ FlatSpec, Matchers }
 
 class JsonParserSpec extends FlatSpec with Matchers {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   "readBoolean()" should "parse 'false'" in {
     JsonParser.withString("false").readBoolean() === false

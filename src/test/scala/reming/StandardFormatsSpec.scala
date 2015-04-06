@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import java.io.StringWriter
 
 class StandardFormatsSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   "Option format" should "read None" in {
     JsonParser.read[Option[String]]("null") === None

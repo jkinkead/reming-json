@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import java.io.StringWriter
 
 class AdditionalFormatsSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   sealed trait Parent
   case class Child1(a: String) extends Parent

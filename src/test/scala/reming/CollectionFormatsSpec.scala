@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import java.io.StringWriter
 
 class CollectionFormatsSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   "listFormat" should "serialize a List[Int] to an array" in {
     val sw = new StringWriter

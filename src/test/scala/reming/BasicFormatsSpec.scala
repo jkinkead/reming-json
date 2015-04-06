@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import java.io.StringWriter
 
 class BasicFormatsSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   "Int format" should "read an int" in {
     JsonParser.read[Int]("123") === 123

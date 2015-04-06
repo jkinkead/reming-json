@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import java.io.StringWriter
 
 class ProductFormatsSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   case class Test0()
   object Test0 {

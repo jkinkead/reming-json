@@ -19,11 +19,11 @@
 package reming
 
 /** Provides all the predefined JsonFormats. */
-trait DefaultProtocol
+trait DefaultJsonProtocol
   extends BasicFormats
   with AdditionalFormats
   with StandardFormats
   with CollectionFormats
   with ProductFormats
 
-object DefaultProtocol extends DefaultProtocol
+object DefaultJsonProtocol extends DefaultJsonProtocol

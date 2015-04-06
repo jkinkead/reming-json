@@ -21,7 +21,7 @@ import java.io.StringWriter
 
 /** Tests the ability of the streaming API to consume its own output. */
 class RoundTripSpec extends FlatSpec {
-  import DefaultProtocol._
+  import DefaultJsonProtocol._
 
   case class Inner(innerA: String, innerB: Option[Int])
   object Inner {
