@@ -24,9 +24,6 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
 )
 
-// generate boilerplate
-Boilerplate.settings
-
 // TODO: Publishing.
 
 // crossScalaVersions := Seq("2.10.4", "2.11.2")
