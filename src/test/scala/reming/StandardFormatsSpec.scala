@@ -15,84 +15,72 @@
  */
 package reming
 
-import org.specs2.mutable._
+import org.scalatest.FlatSpec
 
 import java.io.StringWriter
 
-class StandardFormatsSpec extends Specification {
+class StandardFormatsSpec extends FlatSpec {
   import DefaultProtocol._
 
-  "Option format" should {
-    "read None" in {
-      JsonParser.read[Option[String]]("null") === None
-    }
-    "write None" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo[Option[String]](sw, None)
-      sw.toString === "null"
-    }
-    "read Some" in {
-      JsonParser.read[Option[String]](""""Exists"""") === Some("Exists")
-    }
-    "write Some" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo[Option[String]](sw, Some("foo"))
-      sw.toString === """"foo""""
-    }
+  "Option format" should "read None" in {
+    JsonParser.read[Option[String]]("null") === None
   }
-  "Either format" should {
-    "read Right" in {
-      JsonParser.read[Either[String, Int]]("[1, 123]") === Right(123)
-    }
-    "read Left" in {
-      JsonParser.read[Either[String, Int]]("""[0, "str"]""") === Left("str")
-    }
+  it should "write None" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo[Option[String]](sw, None)
+    sw.toString === "null"
+  }
+  it should "read Some" in {
+    JsonParser.read[Option[String]](""""Exists"""") === Some("Exists")
+  }
+  it should "write Some" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo[Option[String]](sw, Some("foo"))
+    sw.toString === """"foo""""
   }
 
-  "Tuple1 format" should {
-    "read values" in {
-      JsonParser.read[Tuple1[Int]]("22") mustEqual Tuple1(22)
-    }
+  "Either format" should "read Right" in {
+    JsonParser.read[Either[String, Int]]("[1, 123]") === Right(123)
   }
-  "Tuple2 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double)]("[22, 1.0]") mustEqual (22, 1.0)
-    }
+  it should "read Left" in {
+    JsonParser.read[Either[String, Int]]("""[0, "str"]""") === Left("str")
   }
-  "Tuple3 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") mustEqual (22, 1.0, "str")
-    }
-    "write values" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, (22, 1.0, "str"))
-      sw.toString mustEqual """[22, 1.0, "str"]"""
-    }
+
+  "Tuple1 format" should "read values" in {
+    JsonParser.read[Tuple1[Int]]("22") === Tuple1(22)
   }
-  "Tuple4 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double, String, Int)]("""[22, 1.0, "str", 42]""") mustEqual
-        (22, 1.0, "str", 42)
-    }
+
+  "Tuple2 format" should "read values" in {
+    JsonParser.read[(Int, Double)]("[22, 1.0]") === (22, 1.0)
   }
-  "Tuple5 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double, String, Int, Int)]("""[22, 1.0, "str", 42, 41]""") mustEqual
-        (22, 1.0, "str", 42, 41)
-    }
+
+  "Tuple3 format" should "read values" in {
+    JsonParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") === (22, 1.0, "str")
   }
-  "Tuple6 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double, String, Int, Int, Int)](
-        """[22, 1.0, "str", 42, 41, 40]"""
-      ) mustEqual (22, 1.0, "str", 42, 41, 40)
-    }
+  it should "write values" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, (22, 1.0, "str"))
+    sw.toString === """[22, 1.0, "str"]"""
   }
-  "Tuple7 format" should {
-    "read values" in {
-      JsonParser.read[(Int, Double, String, Int, Int, Int, String)](
-        """[22, 1.0, "str", 42, 41, 40, "i"]"""
-      ) mustEqual (22, 1.0, "str", 42, 41, 40, "i")
-    }
+
+  "Tuple4 format" should "read values" in {
+    JsonParser.read[(Int, Double, String, Int)]("""[22, 1.0, "str", 42]""") === (22, 1.0, "str", 42)
+  }
+
+  "Tuple5 format" should "read values" in {
+    JsonParser.read[(Int, Double, String, Int, Int)]("""[22, 1.0, "str", 42, 41]""") ===
+      (22, 1.0, "str", 42, 41)
+  }
+
+  "Tuple6 format" should "read values" in {
+    JsonParser.read[(Int, Double, String, Int, Int, Int)](
+      """[22, 1.0, "str", 42, 41, 40]"""
+    ) === (22, 1.0, "str", 42, 41, 40)
+  }
+
+  "Tuple7 format" should "read values" in {
+    JsonParser.read[(Int, Double, String, Int, Int, Int, String)](
+      """[22, 1.0, "str", 42, 41, 40, "i"]"""
+    ) === (22, 1.0, "str", 42, 41, 40, "i")
   }
 }

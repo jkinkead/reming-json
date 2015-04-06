@@ -18,11 +18,7 @@ scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "
 
 resolvers += Opts.resolver.sonatypeReleases
 
-libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "2.4.16" % "test",
-  "org.specs2" %% "specs2-scalacheck" % "2.4.16" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
-)
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 // TODO: Publishing.
 

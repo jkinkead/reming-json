@@ -15,12 +15,12 @@
  */
 package reming
 
-import org.specs2.mutable._
+import org.scalatest.FlatSpec
 
 import java.io.StringWriter
 
 /** Tests the ability of the streaming API to consume its own output. */
-class RoundTripSpec extends Specification {
+class RoundTripSpec extends FlatSpec {
   import DefaultProtocol._
 
   case class Inner(innerA: String, innerB: Option[Int])
@@ -46,11 +46,9 @@ class RoundTripSpec extends Specification {
     )
   )
 
-  "Printing -> Parsing round-trip" should {
-    "work when using pretty printer" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, testVal)
-      JsonParser.read[Outer](sw.toString) === testVal
-    }
+  "Printing -> Parsing round-trip" should "work when using pretty printer" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, testVal)
+    JsonParser.read[Outer](sw.toString) === testVal
   }
 }

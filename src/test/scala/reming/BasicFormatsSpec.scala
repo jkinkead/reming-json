@@ -15,32 +15,28 @@
  */
 package reming
 
-import org.specs2.mutable._
+import org.scalatest.FlatSpec
 
 import java.io.StringWriter
 
-class BasicFormatsSpec extends Specification {
+class BasicFormatsSpec extends FlatSpec {
   import DefaultProtocol._
 
-  "Int format" should {
-    "read an int" in {
-      JsonParser.read[Int]("123") === 123
-    }
-    "write an int" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, 123)
-      sw.toString === "123"
-    }
+  "Int format" should "read an int" in {
+    JsonParser.read[Int]("123") === 123
+  }
+  it should "write an int" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, 123)
+    sw.toString === "123"
   }
 
-  "String format" should {
-    "read a string" in {
-      JsonParser.read[String](""""abc"""") === "abc"
-    }
-    "write a string" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, "abc")
-      sw.toString === """"abc""""
-    }
+  "String format" should "read a string" in {
+    JsonParser.read[String](""""abc"""") === "abc"
+  }
+  it should "write a string" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, "abc")
+    sw.toString === """"abc""""
   }
 }

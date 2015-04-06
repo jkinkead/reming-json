@@ -15,96 +15,87 @@
  */
 package reming
 
-import org.specs2.mutable._
+import org.scalatest.FlatSpec
 
 import java.io.StringWriter
 
-class CollectionFormatsSpec extends Specification with DefaultProtocol {
+class CollectionFormatsSpec extends FlatSpec {
+  import DefaultProtocol._
 
-  "listFormat" should {
-    val list = List(1, 2, 3)
-    "serialize a List[Int] to an array" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, list)
-      sw.toString === "[1, 2, 3]"
-    }
-    "read a serialized int array" in {
-      JsonParser.read[List[Int]]("[1,2,3]") === list
-    }
+  "listFormat" should "serialize a List[Int] to an array" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, List(1, 2, 3))
+    sw.toString === "[1, 2, 3]"
+  }
+  it should "read a serialized int array" in {
+    JsonParser.read[List[Int]]("[1,2,3]") === List(1, 2, 3)
   }
 
-  "arrayFormat" should {
-    val array = Array(1, 2, 3)
-    "serialize an Array[Int] to an int array" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, array)
-      sw.toString === "[1, 2, 3]"
-    }
-    "read a serialized int array" in {
-      JsonParser.read[Array[Int]]("[1,2,3]") === array
-    }
+  "arrayFormat" should "serialize an Array[Int] to an int array" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, Array(1, 2, 3))
+    sw.toString === "[1, 2, 3]"
+  }
+  it should "read a serialized int array" in {
+    JsonParser.read[Array[Int]]("[1,2,3]") === Array(1, 2, 3)
   }
 
-  "mapFormat" should {
+  "mapFormat" should "serialize a Map[String, Long] to an object" in {
     val map = Map("a" -> 1, "b" -> 2, "c" -> 3)
-    "serialize a Map[String, Long] to an object" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, map)
-      sw.toString ===
-        """{
-          |  "a": 1,
-          |  "b": 2,
-          |  "c": 3
-          |}""".stripMargin
-    }
-    "read an object with long values to a Map[String, Long]" in {
-      JsonParser.read[Map[String, Long]]("""{"a":1,"c":3,"b":2}""") === map
-    }
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, map)
+    sw.toString ===
+      """{
+        |  "a": 1,
+        |  "b": 2,
+        |  "c": 3
+        |}""".stripMargin
+  }
+  it should "read an object with long values to a Map[String, Long]" in {
+    val map = Map("a" -> 1, "b" -> 2, "c" -> 3)
+    JsonParser.read[Map[String, Long]]("""{"a":1,"c":3,"b":2}""") === map
   }
 
   case class TestObject(a: String, b: Option[Int])
   object TestObject {
     implicit val innerFormat = jsonFormat2(TestObject.apply)
   }
-  "seq format" should {
+  "seq format" should "serialize a seq of objects" in {
     val seq = Seq(TestObject("a", None), TestObject("b", Some(1)))
-    "serialize a seq of objects" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, seq)
-      sw.toString ===
-        """[{
-          |  "a": "a"
-          |}, {
-          |  "a": "b",
-          |  "b": 1
-          |}]""".stripMargin
-    }
-    "read a serialized seq of objects" in {
-      JsonParser.read[Seq[TestObject]]("""[{"a": "a"}, {"b": 1,"a":"b"}]""") === seq
-    }
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, seq)
+    sw.toString ===
+      """[{
+        |  "a": "a"
+        |}, {
+        |  "a": "b",
+        |  "b": 1
+        |}]""".stripMargin
+  }
+  it should "read a serialized seq of objects" in {
+    val seq = Seq(TestObject("a", None), TestObject("b", Some(1)))
+    JsonParser.read[Seq[TestObject]]("""[{"a": "a"}, {"b": 1,"a":"b"}]""") === seq
   }
 
-  "immutableSetFormat" should {
+  "immutableSetFormat" should "serialize a Set[Int] to an array" in {
     val set = Set(4, 5, 6)
-    "serialize a Set[Int] to an array" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, set)
-      sw.toString === "[4, 5, 6]"
-    }
-    "read an array of numbers as a Set[Int]" in {
-      JsonParser.read[Set[Int]]("[4,5,6]") === set
-    }
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, set)
+    sw.toString === "[4, 5, 6]"
+  }
+  it should "read an array of numbers as a Set[Int]" in {
+    val set = Set(4, 5, 6)
+    JsonParser.read[Set[Int]]("[4,5,6]") === set
   }
 
-  "indexedSeqFormat" should {
+  "indexedSeqFormat" should "serialize an IndexedSeq[Int] to an array" in {
     val seq = collection.IndexedSeq(3, 2, 1)
-    "serialize an IndexedSeq[Int] to an array" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, seq)
-      sw.toString === "[3, 2, 1]"
-    }
-    "read an array of numbers as an IndexedSeq[Int]" in {
-      JsonParser.read[IndexedSeq[Int]]("[3,2,1]") === seq
-    }
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, seq)
+    sw.toString === "[3, 2, 1]"
+  }
+  it should "read an array of numbers as an IndexedSeq[Int]" in {
+    val seq = collection.IndexedSeq(3, 2, 1)
+    JsonParser.read[IndexedSeq[Int]]("[3,2,1]") === seq
   }
 }

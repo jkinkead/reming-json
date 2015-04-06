@@ -15,11 +15,13 @@
  */
 package reming
 
-import org.specs2.mutable._
+import org.scalatest.FlatSpec
 
 import java.io.StringWriter
 
-class AdditionalFormatsSpec extends Specification with DefaultProtocol {
+class AdditionalFormatsSpec extends FlatSpec {
+  import DefaultProtocol._
+
   sealed trait Parent
   case class Child1(a: String) extends Parent
   object Child1 {
@@ -36,34 +38,36 @@ class AdditionalFormatsSpec extends Specification with DefaultProtocol {
     )
   }
 
-  "polymorphic serialization" should {
-    val one: Parent = Child1("one")
-    val two: Parent = Child2("two", 2)
-    "serialize the first child class" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, one)
-      sw.toString ===
-        """["Child1", {
-          |  "a": "one"
-          |}]""".stripMargin
-    }
-    "serialize the second child class" in {
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, two)
-      sw.toString ===
-        """["Child2", {
-          |  "b": "two",
-          |  "c": 2
-          |}]""".stripMargin
-    }
-    "read a serialized instance" in {
-      JsonParser.read[Parent]("""["Child1",{"a":"value"}]""") === Child1("value")
-    }
-    "round-trip a Seq" in {
-      val seq: Seq[Parent] = Seq(one, two)
-      val sw = new StringWriter
-      PrettyPrinter.printTo(sw, seq)
-      JsonParser.read[Seq[Parent]](sw.toString) === seq
-    }
+  val one: Parent = Child1("one")
+  val two: Parent = Child2("two", 2)
+
+  "polymorphic serialization" should "serialize the first child class" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, one)
+    sw.toString ===
+      """["Child1", {
+        |  "a": "one"
+        |}]""".stripMargin
+  }
+
+  it should "serialize the second child class" in {
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, two)
+    sw.toString ===
+      """["Child2", {
+        |  "b": "two",
+        |  "c": 2
+        |}]""".stripMargin
+  }
+
+  it should "read a serialized instance" in {
+    JsonParser.read[Parent]("""["Child1",{"a":"value"}]""") === Child1("value")
+  }
+
+  it should "round-trip a Seq" in {
+    val seq: Seq[Parent] = Seq(one, two)
+    val sw = new StringWriter
+    PrettyPrinter.printTo(sw, seq)
+    JsonParser.read[Seq[Parent]](sw.toString) === seq
   }
 }
