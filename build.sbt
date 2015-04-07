@@ -1,6 +1,6 @@
 name := "reming-json"
 
-version := "1.3.1"
+version := "0.0.9-SNAPSHOT"
 
 organization := "com.github.jkinkead"
 
@@ -8,7 +8,7 @@ description := "An AST-free Scala library for JSON marshalling, based on spray-j
 
 homepage := Some(new URL("https://github.com/jkinkead/spray-json"))
 
-startYear := Some(2011)
+startYear := Some(2015)
 
 licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
