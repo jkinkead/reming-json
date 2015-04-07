@@ -20,11 +20,24 @@ package reming
 import java.io.{ PrintWriter, Writer }
 
 object PrettyPrinter {
+  /** Prints the given value to the given writer. */
   def printTo[T](writer: Writer, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
     printTo(new PrintWriter(writer), value)
   }
+
+  /** Prints the given value to the given writer. */
   def printTo[T](writer: PrintWriter, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
     new PrettyPrinter(writer).print(value)
+  }
+
+  /** Prints directly to a string. Useful for debugging; not as efficient as streaming directly to a
+    * writer.
+    * @return the JSON representation of `value` as a string
+    */
+  def printToString[T](value: T)(implicit jsonWriter: JsonWriter[T]): String = {
+    val sw = new StringWriter()
+    printTo(sw, value)
+    sw.toString
   }
 }
 
