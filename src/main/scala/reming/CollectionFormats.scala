@@ -32,6 +32,9 @@ trait CollectionFormats {
     }
   }
 
+  // TODO(jkinkead): Evaluate the performance of seq-based map formats versus string-based map
+  // formats.
+
   /** Serializes any map with string keys as as JS object. */
   implicit def mapFormat[T : JsonFormat] = new JsonFormat[Map[String, T]] {
     override def write(map: Map[String, T], printer: JsonPrinter): Unit = {

@@ -50,3 +50,15 @@ object JsonWriter {
 
 /** Provides the streaming JSON deserialization and serialization for type T. */
 trait JsonFormat[T] extends JsonReader[T] with JsonWriter[T]
+
+/** Lazy wrapper around serialization, for serializing recursive class hierarchies. This is because
+  * in a recursive structure, need the format to exist before you can construct it.
+  */
+trait LazyFormat[T] extends JsonFormat[T] {
+  /** @return the wrapped format to delegate to */
+  def delegate: JsonFormat[T]
+
+  final override def write(obj: T, printer: JsonPrinter): Unit = delegate.write(obj, printer)
+
+  final override def read(parser: JsonParser): T = delegate.read(parser)
+}
