@@ -17,8 +17,6 @@ package reming
 
 import org.scalatest.FlatSpec
 
-import java.io.StringWriter
-
 class AdditionalFormatsSpec extends FlatSpec {
   import DefaultJsonProtocol._
 
@@ -42,22 +40,11 @@ class AdditionalFormatsSpec extends FlatSpec {
   val two: Parent = Child2("two", 2)
 
   "polymorphic serialization" should "serialize the first child class" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, one)
-    sw.toString ===
-      """["Child1", {
-        |  "a": "one"
-        |}]""".stripMargin
+    CompactPrinter.printToString(one) === """["Child1",{"a":"one"}]"""
   }
 
   it should "serialize the second child class" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, two)
-    sw.toString ===
-      """["Child2", {
-        |  "b": "two",
-        |  "c": 2
-        |}]""".stripMargin
+    CompactPrinter.printToString(two) === """["Child2",{"b":"two","c":2}]"""
   }
 
   it should "read a serialized instance" in {
@@ -66,8 +53,6 @@ class AdditionalFormatsSpec extends FlatSpec {
 
   it should "round-trip a Seq" in {
     val seq: Seq[Parent] = Seq(one, two)
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, seq)
-    JsonParser.read[Seq[Parent]](sw.toString) === seq
+    JsonParser.read[Seq[Parent]](CompactPrinter.printToString(seq)) === seq
   }
 }

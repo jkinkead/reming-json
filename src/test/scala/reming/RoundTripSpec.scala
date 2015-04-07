@@ -17,8 +17,6 @@ package reming
 
 import org.scalatest.FlatSpec
 
-import java.io.StringWriter
-
 /** Tests the ability of the streaming API to consume its own output. */
 class RoundTripSpec extends FlatSpec {
   import DefaultJsonProtocol._
@@ -47,8 +45,7 @@ class RoundTripSpec extends FlatSpec {
   )
 
   "Printing -> Parsing round-trip" should "work when using pretty printer" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, testVal)
-    JsonParser.read[Outer](sw.toString) === testVal
+    val jsonString = PrettyPrinter.printToString(testVal)
+    JsonParser.read[Outer](jsonString) === testVal
   }
 }

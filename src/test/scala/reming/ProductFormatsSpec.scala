@@ -17,8 +17,6 @@ package reming
 
 import org.scalatest.FlatSpec
 
-import java.io.StringWriter
-
 class ProductFormatsSpec extends FlatSpec {
   import DefaultJsonProtocol._
 
@@ -40,30 +38,17 @@ class ProductFormatsSpec extends FlatSpec {
   }
 
   "A JsonFormat created with 'jsonFormat0'" should "write an object" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, Test0())
-    sw.toString === "{\n\n}"
+    PrettyPrinter.printToString(Test0()) === "{\n\n}"
   }
   it should "read an object" in {
     JsonParser.read[Test0]("{}") === Test0()
   }
 
   "A JsonFormat created with 'jsonFormat2'" should "write a value with Some" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, Test2(1, Some(1.2)))
-    sw.toString ===
-      """{
-      |  "a": 1,
-      |  "b": 1.2
-      |}""".stripMargin
+    CompactPrinter.printToString(Test2(1, Some(1.2))) === """{"a":1,"b":1.2}"""
   }
   it should "write a value with None" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, Test2(22, None))
-    sw.toString ===
-      """{
-      |  "a": 22
-      |}""".stripMargin
+    CompactPrinter.printToString(Test2(22, None)) === """{"a":22}"""
   }
   it should "read a value with Some" in {
     JsonParser.read[Test2]("""{ "b": 2.2, "a": 2}""") === Test2(2, Some(2.2))
@@ -73,16 +58,8 @@ class ProductFormatsSpec extends FlatSpec {
   }
 
   "A JsonFormat created with 'jsonFormat5'" should "write a value" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, Test5(33, 3.3, "foo", "bar", 44))
-    sw.toString ===
-      """{
-      |  "a": 33,
-      |  "b": 3.3,
-      |  "c": "foo",
-      |  "d": "bar",
-      |  "e": 44
-      |}""".stripMargin
+    CompactPrinter.printToString(Test5(33, 3.3, "foo", "bar", 44)) ===
+      """{"a":33,"b":3.3,"c":"foo","d":"bar","e": 44}"""
   }
   it should "read a value" in {
     JsonParser.read[Test5]("""{"b": 3.3,"e":44,"a":33,"d":"bar","c":"foo"}""") ===
@@ -90,18 +67,8 @@ class ProductFormatsSpec extends FlatSpec {
   }
 
   "a nested case class" should "write a value" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, Nested(Test0(), Test2(12, Some(3.4))))
-    sw.toString ===
-      """{
-      |  "a": {
-      |
-      |  },
-      |  "b": {
-      |    "a": 12,
-      |    "b": 3.4
-      |  }
-      |}""".stripMargin
+    CompactPrinter.printToString(Nested(Test0(), Test2(12, Some(3.4)))) ===
+      """{"a":{},"b":{"a":12,"b":3.4}}"""
   }
   it should "read a value" in {
     JsonParser.read[Nested]("""{"b":{"a":12,"b":3.4},"a":{}}""") ===

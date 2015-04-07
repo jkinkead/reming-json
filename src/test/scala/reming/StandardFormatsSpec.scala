@@ -17,8 +17,6 @@ package reming
 
 import org.scalatest.FlatSpec
 
-import java.io.StringWriter
-
 class StandardFormatsSpec extends FlatSpec {
   import DefaultJsonProtocol._
 
@@ -26,17 +24,13 @@ class StandardFormatsSpec extends FlatSpec {
     JsonParser.read[Option[String]]("null") === None
   }
   it should "write None" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo[Option[String]](sw, None)
-    sw.toString === "null"
+    PrettyPrinter.printToString[Option[String]](None) === "null"
   }
   it should "read Some" in {
     JsonParser.read[Option[String]](""""Exists"""") === Some("Exists")
   }
   it should "write Some" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo[Option[String]](sw, Some("foo"))
-    sw.toString === """"foo""""
+    PrettyPrinter.printToString[Option[String]](Some("foo")) === """"foo""""
   }
 
   "Either format" should "read Right" in {
@@ -58,9 +52,7 @@ class StandardFormatsSpec extends FlatSpec {
     JsonParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") === (22, 1.0, "str")
   }
   it should "write values" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, (22, 1.0, "str"))
-    sw.toString === """[22, 1.0, "str"]"""
+    PrettyPrinter.printToString((22, 1.0, "str")) === """[22, 1.0, "str"]"""
   }
 
   "Tuple4 format" should "read values" in {

@@ -17,8 +17,6 @@ package reming
 
 import org.scalatest.FlatSpec
 
-import java.io.StringWriter
-
 class BasicFormatsSpec extends FlatSpec {
   import DefaultJsonProtocol._
 
@@ -26,17 +24,13 @@ class BasicFormatsSpec extends FlatSpec {
     JsonParser.read[Int]("123") === 123
   }
   it should "write an int" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, 123)
-    sw.toString === "123"
+    PrettyPrinter.printToString(123) === "123"
   }
 
   "String format" should "read a string" in {
     JsonParser.read[String](""""abc"""") === "abc"
   }
   it should "write a string" in {
-    val sw = new StringWriter
-    PrettyPrinter.printTo(sw, "abc")
-    sw.toString === """"abc""""
+    PrettyPrinter.printToString("abc") === """"abc""""
   }
 }
