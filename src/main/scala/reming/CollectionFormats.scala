@@ -20,23 +20,18 @@ package reming
 
 import scala.reflect.ClassTag
 
-trait CollectionFormats {
+trait CollectionFormats { self: StandardFormats =>
   implicit def arrayFormat[T : JsonFormat : ClassTag] = new JsonFormat[Array[T]] {
     override def write(value: Array[T], printer: JsonPrinter): Unit = {
       printer.startArray()
       value foreach printer.printArrayItem[T]
       printer.endArray()
     }
-    override def read(parser: JsonParser): Array[T] = {
-      parser.readArray.toArray
-    }
+    override def read(parser: JsonParser): Array[T] = parser.readArray.toArray
   }
 
-  // TODO(jkinkead): Evaluate the performance of seq-based map formats versus string-based map
-  // formats.
-
-  /** Serializes any map with string keys as as JS object. */
-  implicit def mapFormat[T : JsonFormat] = new JsonFormat[Map[String, T]] {
+  /** Serializes any map with string keys as a JS object. */
+  implicit def stringMapFormat[T : JsonFormat] = new JsonFormat[Map[String, T]] {
     override def write(map: Map[String, T], printer: JsonPrinter): Unit = {
       printer.startObject()
       for ((key, value) <- map) printer.printField(key, value)
@@ -44,6 +39,12 @@ trait CollectionFormats {
     }
     override def read(parser: JsonParser): Map[String, T] = Map(parser.readObject.toSeq: _*)
   }
+
+  /** Serializes any other map a JS array. */
+  implicit def anyMapFormat[K : JsonFormat, V : JsonFormat] = {
+    viaSeq[Map[K, V], (K, V)](seq => Map(seq: _*))
+  }
+
   implicit def listFormat[T : JsonFormat] = viaSeq[List[T], T](seq => List(seq: _*))
 
   // Immutable collection iterables.
@@ -76,6 +77,9 @@ trait CollectionFormats {
     viaSeq[LinearSeq[T], T](seq => LinearSeq(seq :_*))
   implicit def setFormat[T : JsonFormat] =
     viaSeq[Set[T], T](seq => Set(seq :_*))
+  implicit def sortedMapFormat[K : JsonFormat : Ordering, V : JsonFormat] = {
+    viaSeq[SortedMap[K, V], (K, V)](seq => SortedMap(seq: _*))
+  }
 
   /** Writes any iterable I of T as a JS array.
     * @param builder factory method to build an I from Seq[T]

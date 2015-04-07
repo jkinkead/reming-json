@@ -17,7 +17,7 @@
 
 package reming
 
-import java.io.{ PrintWriter, Writer }
+import java.io.{ PrintWriter, StringWriter, Writer }
 
 object PrettyPrinter {
   /** Prints the given value to the given writer. */
