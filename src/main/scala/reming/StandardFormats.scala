@@ -41,7 +41,7 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  /** Format for Either. This is *NOT* compatible with spray-json. */
+  /** Format for Either. */
   implicit def eitherFormat[A : JF, B : JF] = new JF[Either[A, B]] {
     override def write(value: Either[A, B], printer: JsonPrinter): Unit = {
       printer.startArray()
