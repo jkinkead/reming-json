@@ -18,7 +18,7 @@
 package reming
 
 /** Exception thrown while reading JSON. */
-class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
+class DeserializationException(msg: String, cause: Throwable = null) extends Exception(msg, cause)
 
 /** Exception thrown while writing JSON. */
-class SerializationException(msg: String) extends RuntimeException(msg)
+class SerializationException(msg: String) extends Exception(msg)
