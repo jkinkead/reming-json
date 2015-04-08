@@ -22,12 +22,11 @@ import java.io.{ PrintWriter, StringWriter, Writer }
 object PrettyPrinter {
   /** Prints the given value to the given writer. */
   def printTo[T](writer: Writer, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
-    printTo(new PrintWriter(writer), value)
-  }
-
-  /** Prints the given value to the given writer. */
-  def printTo[T](writer: PrintWriter, value: T)(implicit jsonWriter: JsonWriter[T]): Unit = {
-    new PrettyPrinter(writer).print(value)
+    val printWriter = writer match {
+      case p: PrintWriter => p
+      case _ => new PrintWriter(writer)
+    }
+    new PrettyPrinter(printWriter).print(value)
   }
 
   /** Prints directly to a string. Useful for debugging; not as efficient as streaming directly to a

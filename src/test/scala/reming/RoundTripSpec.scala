@@ -15,10 +15,8 @@
  */
 package reming
 
-import org.scalatest.FlatSpec
-
 /** Tests the ability of the streaming API to consume its own output. */
-class RoundTripSpec extends FlatSpec {
+class RoundTripSpec extends BaseSpec {
   import DefaultJsonProtocol._
 
   case class Inner(innerA: String, innerB: Option[Int])
@@ -46,6 +44,6 @@ class RoundTripSpec extends FlatSpec {
 
   "Printing -> Parsing round-trip" should "work when using pretty printer" in {
     val jsonString = PrettyPrinter.printToString(testVal)
-    JsonParser.read[Outer](jsonString) === testVal
+    JsonParser.read[Outer](jsonString) shouldBe testVal
   }
 }

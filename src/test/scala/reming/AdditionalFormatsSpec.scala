@@ -15,10 +15,9 @@
  */
 package reming
 
-import org.scalatest.FlatSpec
-
-class AdditionalFormatsSpec extends FlatSpec {
+class AdditionalFormatsSpec extends BaseSpec {
   import DefaultJsonProtocol._
+  import Conversions._
 
   sealed trait Parent
   case class Child1(a: String) extends Parent
@@ -40,19 +39,19 @@ class AdditionalFormatsSpec extends FlatSpec {
   val two: Parent = Child2("two", 2)
 
   "polymorphic serialization" should "serialize the first child class" in {
-    CompactPrinter.printToString(one) === """["Child1",{"a":"one"}]"""
+    one.compactPrintToString shouldBe """["Child1",{"a":"one"}]"""
   }
 
   it should "serialize the second child class" in {
-    CompactPrinter.printToString(two) === """["twoey",{"b":"two","c":2}]"""
+    two.compactPrintToString shouldBe """["twoey",{"b":"two","c":2}]"""
   }
 
   it should "read a serialized instance" in {
-    JsonParser.read[Parent]("""["Child1",{"a":"value"}]""") === Child1("value")
+    JsonParser.read[Parent]("""["Child1",{"a":"value"}]""") shouldBe Child1("value")
   }
 
   it should "round-trip a Seq" in {
     val seq: Seq[Parent] = Seq(one, two)
-    JsonParser.read[Seq[Parent]](CompactPrinter.printToString(seq)) === seq
+    JsonParser.read[Seq[Parent]](seq.compactPrintToString) shouldBe seq
   }
 }

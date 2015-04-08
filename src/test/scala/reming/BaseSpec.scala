@@ -15,20 +15,6 @@
  */
 package reming
 
-class BasicFormatsSpec extends BaseSpec {
-  import DefaultJsonProtocol._
+import org.scalatest.{ FlatSpec, Matchers }
 
-  "Int format" should "read an int" in {
-    JsonParser.read[Int]("123") shouldBe 123
-  }
-  it should "write an int" in {
-    PrettyPrinter.printToString(123) shouldBe "123"
-  }
-
-  "String format" should "read a string" in {
-    JsonParser.read[String](""""abc"""") shouldBe "abc"
-  }
-  it should "write a string" in {
-    PrettyPrinter.printToString("abc") shouldBe """"abc""""
-  }
-}
+trait BaseSpec extends FlatSpec with Matchers

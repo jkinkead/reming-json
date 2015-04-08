@@ -15,16 +15,14 @@
  */
 package reming
 
-import org.scalatest.{ FlatSpec, Matchers }
-
-class JsonParserSpec extends FlatSpec with Matchers {
+class JsonParserSpec extends BaseSpec {
   import DefaultJsonProtocol._
 
   "readBoolean()" should "parse 'false'" in {
-    JsonParser.withString("false").readBoolean() === false
+    JsonParser.withString("false").readBoolean() shouldBe false
   }
   it should "parse 'true'" in {
-    JsonParser.withString("true").readBoolean() === true
+    JsonParser.withString("true").readBoolean() shouldBe true
   }
   it should "fail on other input" in {
     a[DeserializationException] should be thrownBy {
@@ -33,7 +31,7 @@ class JsonParserSpec extends FlatSpec with Matchers {
   }
 
   "readString()" should """parse '"foo"'""" in {
-    JsonParser.withString(""""foo"""").readString() === "foo"
+    JsonParser.withString(""""foo"""").readString() shouldBe "foo"
   }
   it should "fail on other input" in {
     a[DeserializationException] should be thrownBy {
@@ -43,34 +41,34 @@ class JsonParserSpec extends FlatSpec with Matchers {
 
   "manual array parsing" should "handle a single-element array" in {
     val parser = JsonParser.withString("[ 123]")
-    parser.startArray[Int]() === 123
+    parser.startArray[Int]() shouldBe 123
     parser.endArray()
-    parser.cursorChar === '\uFFFF'
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "handle a heterogeneous array" in {
     val parser = JsonParser.withString("""["abc" ,123 ]""")
-    parser.startArray[String]() === "abc"
-    parser.readArrayItem[Int]() === 123
+    parser.startArray[String]() shouldBe "abc"
+    parser.readArrayItem[Int]() shouldBe 123
     parser.endArray()
-    parser.cursorChar === '\uFFFF'
+    parser.cursorChar shouldBe '\uFFFF'
   }
 
   "iterator array parsing" should "handle an empty array" in {
     val parser = JsonParser.withString("[ ]")
-    parser.readArray[Int]().toSeq === Seq()
-    parser.cursorChar === '\uFFFF'
+    parser.readArray[Int]().toSeq shouldBe Seq()
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "handle an array" in {
     val parser = JsonParser.withString("[1, 2,3 ,4]")
-    parser.readArray[Int]().toSeq === Seq(1, 2, 3, 4)
-    parser.cursorChar === '\uFFFF'
+    parser.readArray[Int]().toSeq shouldBe Seq(1, 2, 3, 4)
+    parser.cursorChar shouldBe '\uFFFF'
   }
 
   "object parsing" should "handle an empty object" in {
     val parser = JsonParser.withString("{}")
     parser.startObject()
     parser.endObject()
-    parser.cursorChar === '\uFFFF'
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "handle an object with keys" in {
     val parser = JsonParser.withString("""{"a" : "string", "b" : false}""")
@@ -78,9 +76,9 @@ class JsonParserSpec extends FlatSpec with Matchers {
     val booleanValue = parser.readField[Boolean]("b")
     val stringValue = parser.readField[String]("a")
     parser.endObject()
-    booleanValue.value === false
-    stringValue.value === "string"
-    parser.cursorChar === '\uFFFF'
+    booleanValue.value shouldBe false
+    stringValue.value shouldBe "string"
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "set default values for handlers" in {
     val parser = JsonParser.withString("""{"a" : "string"}""")
@@ -88,9 +86,9 @@ class JsonParserSpec extends FlatSpec with Matchers {
     val booleanValue = parser.readField[Boolean]("b")
     val stringValue = parser.readField[String]("a")
     parser.endObject()
-    booleanValue.optionalValue === None
-    stringValue.value === "string"
-    parser.cursorChar === '\uFFFF'
+    booleanValue.optionalValue shouldBe None
+    stringValue.value shouldBe "string"
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "skip keys without handlers" in {
     val parser = JsonParser.withString("""{"a": "string",
@@ -99,7 +97,7 @@ class JsonParserSpec extends FlatSpec with Matchers {
     }""")
     parser.startObject()
     parser.endObject()
-    parser.cursorChar === '\uFFFF'
+    parser.cursorChar shouldBe '\uFFFF'
   }
   it should "fail on unterminated objects" in {
     val parser = JsonParser.withString("""{"a" : "string" """)
@@ -129,6 +127,6 @@ class JsonParserSpec extends FlatSpec with Matchers {
     val instance: MyType = JsonParser.read[MyType](
       """{ "name": "Paul McCartney", "hasMonkey": true }"""
     )
-    instance === MyType("Paul McCartney", true)
+    instance shouldBe MyType("Paul McCartney", true)
   }
 }

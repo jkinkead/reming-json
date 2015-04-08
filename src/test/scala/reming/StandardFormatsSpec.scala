@@ -15,64 +15,63 @@
  */
 package reming
 
-import org.scalatest.FlatSpec
-
-class StandardFormatsSpec extends FlatSpec {
+class StandardFormatsSpec extends BaseSpec {
   import DefaultJsonProtocol._
 
   "Option format" should "read None" in {
-    JsonParser.read[Option[String]]("null") === None
+    JsonParser.read[Option[String]]("null") shouldBe None
   }
   it should "write None" in {
-    PrettyPrinter.printToString[Option[String]](None) === "null"
+    PrettyPrinter.printToString[Option[String]](None) shouldBe "null"
   }
   it should "read Some" in {
-    JsonParser.read[Option[String]](""""Exists"""") === Some("Exists")
+    JsonParser.read[Option[String]](""""Exists"""") shouldBe Some("Exists")
   }
   it should "write Some" in {
-    PrettyPrinter.printToString[Option[String]](Some("foo")) === """"foo""""
+    PrettyPrinter.printToString[Option[String]](Some("foo")) shouldBe """"foo""""
   }
 
   "Either format" should "read Right" in {
-    JsonParser.read[Either[String, Int]]("[1, 123]") === Right(123)
+    JsonParser.read[Either[String, Int]]("[1, 123]") shouldBe Right(123)
   }
   it should "read Left" in {
-    JsonParser.read[Either[String, Int]]("""[0, "str"]""") === Left("str")
+    JsonParser.read[Either[String, Int]]("""[0, "str"]""") shouldBe Left("str")
   }
 
   "Tuple1 format" should "read values" in {
-    JsonParser.read[Tuple1[Int]]("22") === Tuple1(22)
+    JsonParser.read[Tuple1[Int]]("22") shouldBe Tuple1(22)
   }
 
   "Tuple2 format" should "read values" in {
-    JsonParser.read[(Int, Double)]("[22, 1.0]") === (22, 1.0)
+    JsonParser.read[(Int, Double)]("[22, 1.0]") shouldBe (22, 1.0)
   }
 
   "Tuple3 format" should "read values" in {
-    JsonParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") === (22, 1.0, "str")
+    JsonParser.read[(Int, Double, String)]("""[22, 1.0, "str"]""") shouldBe (22, 1.0, "str")
   }
   it should "write values" in {
-    PrettyPrinter.printToString((22, 1.0, "str")) === """[22, 1.0, "str"]"""
+    PrettyPrinter.printToString((22, 1.0, "str")) shouldBe """[22, 1.0, "str"]"""
   }
 
   "Tuple4 format" should "read values" in {
-    JsonParser.read[(Int, Double, String, Int)]("""[22, 1.0, "str", 42]""") === (22, 1.0, "str", 42)
+    JsonParser.read[(Int, Double, String, Int)]("""[22, 1.0, "str", 42]""") shouldBe
+      (22, 1.0, "str", 42)
   }
 
   "Tuple5 format" should "read values" in {
-    JsonParser.read[(Int, Double, String, Int, Int)]("""[22, 1.0, "str", 42, 41]""") ===
+    JsonParser.read[(Int, Double, String, Int, Int)]("""[22, 1.0, "str", 42, 41]""") shouldBe
       (22, 1.0, "str", 42, 41)
   }
 
   "Tuple6 format" should "read values" in {
     JsonParser.read[(Int, Double, String, Int, Int, Int)](
       """[22, 1.0, "str", 42, 41, 40]"""
-    ) === (22, 1.0, "str", 42, 41, 40)
+    ) shouldBe (22, 1.0, "str", 42, 41, 40)
   }
 
   "Tuple7 format" should "read values" in {
     JsonParser.read[(Int, Double, String, Int, Int, Int, String)](
       """[22, 1.0, "str", 42, 41, 40, "i"]"""
-    ) === (22, 1.0, "str", 42, 41, 40, "i")
+    ) shouldBe (22, 1.0, "str", 42, 41, 40, "i")
   }
 }
