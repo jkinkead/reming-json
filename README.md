@@ -1,6 +1,6 @@
 # Reming JSON Serializer
 
-## _"Streaming JSON without the AST!"_
+### _"Streaming JSON without the AST!"_
 
 Reming is a streaming [JSON](http://json.org) serializer based on
 [_spray-json_](https://github.com/spray/spray-json).  If you're familiar with _spray-json_, reming
