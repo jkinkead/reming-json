@@ -24,10 +24,6 @@ import scala.util.Try
 
 /** Provides formats and helpers. */
 trait AdditionalFormats { self: BasicFormats =>
-  // TODO(jkinkead): Add in format for spray JsValue.
-  // TODO(jkinkead): Add in format for spray.JsonFormat.
-  // TODO(jkinkead): Add in lift functions to turn Json{Writer,Reader} to JsonFormat?
-
   /** Builds a ChildFormat for class P that wraps an existing format for child class C. */
   def childFormat[C <: P : ClassTag : JsonFormat, P]: ChildFormat[C, P] = {
     new ChildFormat(implicitly[JsonFormat[C]])
