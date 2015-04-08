@@ -24,12 +24,12 @@ package reming
 trait BasicFormats {
   implicit object IntFormat extends JsonFormat[Int] {
     override def write(value: Int, printer: JsonPrinter): Unit = printer.printInt(value)
-    override def read(parser: JsonParser): Int = parser.readNumber().toInt
+    override def read(parser: JsonParser): Int = parser.readInt()
   }
 
   implicit object LongFormat extends JsonFormat[Long] {
     override def write(value: Long, printer: JsonPrinter): Unit = printer.printLong(value)
-    override def read(parser: JsonParser): Long = parser.readNumber().toLong
+    override def read(parser: JsonParser): Long = parser.readLong()
   }
 
   implicit object FloatFormat extends JsonFormat[Float] {

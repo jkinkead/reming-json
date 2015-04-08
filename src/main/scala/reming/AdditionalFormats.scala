@@ -33,6 +33,13 @@ trait AdditionalFormats { self: BasicFormats =>
     new ChildFormat(implicitly[JsonFormat[C]])
   }
 
+  /** Builds a ChildFormat for class P that wraps an existing format for child class C.
+    * @param name the name to serialize the class with
+    */
+  def childFormat[C <: P : ClassTag : JsonFormat, P](name: String): ChildFormat[C, P] = {
+    new ChildFormat(implicitly[JsonFormat[C]], Some(name))
+  }
+
   /** Builds a ParentFormat for class P serializing any number of child classes of P. */
   def parentFormat[P](childFormats: ChildFormat[_ <: P, P]*): JsonFormat[P] = {
     new ParentFormat[P](childFormats)
@@ -42,9 +49,11 @@ trait AdditionalFormats { self: BasicFormats =>
     * serialization, and exposes the runtime class of C, for use in ParentFormat.
     */
   class ChildFormat[C <: P : ClassTag, P](
-      childFormat: JsonFormat[C]
+      childFormat: JsonFormat[C],
+      nameOption: Option[String] = None
   ) extends JsonFormat[P] {
     val childClass: Class[_] = implicitly[ClassTag[C]].runtimeClass
+    val name: String = nameOption getOrElse childClass.getSimpleName
 
     override def write(value: P, printer: JsonPrinter): Unit = value match {
       case value: C => childFormat.write(value, printer)
@@ -65,13 +74,13 @@ trait AdditionalFormats { self: BasicFormats =>
       result
     }
     private val formatsByName: Map[String, JsonFormat[P]] =
-      (formats map { f => f.childClass.getSimpleName -> f }).toMap
+      (formats map { f => f.name -> f }).toMap
 
     override def write(value: P, printer: JsonPrinter): Unit = {
       val clazz = value.getClass
       formatsByClass.get(clazz) map { format =>
         printer.startArray()
-        printer.printArrayItem(clazz.getSimpleName)
+        printer.printArrayItem(format.name)
         printer.printArrayItem(value)(format)
         printer.endArray()
       } getOrElse {

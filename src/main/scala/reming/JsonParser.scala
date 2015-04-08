@@ -18,7 +18,7 @@ package reming
 
 import java.lang.{ StringBuilder => JavaStringBuilder }
 
-import scala.annotation.switch
+import scala.annotation.{ switch, tailrec }
 import scala.collection.mutable
 import scala.io.Source
 
@@ -57,24 +57,157 @@ object JsonParser {
   * Public methods will throw DeserializationException if the expected value isn't next in the
   * input.
   */
-class JsonParser(input: ParserInput) extends ParserBase(input) {
+class JsonParser(input: ParserInput) {
+  private val sb = new JavaStringBuilder
 
-  // End-of-input sigil, forced to a compile-time constant.
-  private final val EOI = '\uFFFF'
+  private[reming] var cursorChar: Char = _
 
-  /** The mapping of object keys to handler functions for the current object. */
-  private var fieldValueHolders: mutable.Map[String, ObjectValue[_]] = _
+  ////////////////////// GRAMMAR ////////////////////////
 
-  /** Throw a DeserializationException instead of ParsingException, since parsing is synonymous with
-    * deserialization.
+  private def `false`() = advance() && ch('a') && ch('l') && ch('s') && ws('e')
+  private def `null`() = advance() && ch('u') && ch('l') && ws('l')
+  private def `true`() = advance() && ch('r') && ch('u') && ws('e')
+
+  /** Reads a string from the input. Used by both object reading and value reading code.
+    * See http://tools.ietf.org/html/rfc4627#section-2.5
     */
-  override def failWithException(summary: String, detail: String): Nothing = {
+  private def `string`(): String = {
+    require('"')
+    sb.setLength(0)
+    while (`char`()) cursorChar = input.nextUtf8Char()
+    require('"')
+    ws()
+    sb.toString()
+  }
+
+  /** Attempts to read a character from the input, and appends it to the internal buffer. This is
+    * meant to be called from within a string - it handles escaping, and stops at an unescaped
+    * quote.
+    * @return true if a character was appended
+    */
+  private def `char`(): Boolean =
+    // simple bloom-filter that quick-matches the most frequent case of characters that are ok to append
+    // (it doesn't match control chars, EOI, '"', '?', '\', 'b' and certain higher, non-ASCII chars)
+    if (((1L << cursorChar) & ((31 - cursorChar) >> 31) & 0x7ffffffbefffffffL) != 0L) appendSB(cursorChar)
+    else cursorChar match {
+      case '"' | EOI => false
+      case '\\' =>
+        advance(); `escaped`()
+      case c => (c >= ' ') && appendSB(c)
+    }
+
+  /** Reads an escaped character from the input, and appends it to the buffer.  This assumes the
+    * backslash has already been read.
+    * @return true if a character was appended
+    */
+  private def `escaped`(): Boolean = {
+    def hexValue(c: Char): Int =
+      if ('0' <= c && c <= '9') c - '0'
+      else if ('a' <= c && c <= 'f') c - 87
+      else if ('A' <= c && c <= 'F') c - 55
+      else fail("hex digit")
+    def unicode() = {
+      var value = hexValue(cursorChar)
+      advance()
+      value = (value << 4) + hexValue(cursorChar)
+      advance()
+      value = (value << 4) + hexValue(cursorChar)
+      advance()
+      value = (value << 4) + hexValue(cursorChar)
+      appendSB(value.toChar)
+    }
+    (cursorChar: @switch) match {
+      case '"' | '/' | '\\' => appendSB(cursorChar)
+      case 'b' => appendSB('\b')
+      case 'f' => appendSB('\f')
+      case 'n' => appendSB('\n')
+      case 'r' => appendSB('\r')
+      case 't' => appendSB('\t')
+      case 'u' =>
+        advance(); unicode()
+      case _ => fail("JSON escape sequence")
+    }
+  }
+
+  // http://tools.ietf.org/html/rfc4627#section-2.4
+  private def `number`(): BigDecimal = {
+    sb.setLength(0)
+    if (ch('-')) {
+      sb.append('-')
+    }
+    `int`()
+    `frac`()
+    `exp`()
+    ws()
+    BigDecimal(sb.toString)
+  }
+
+  private def `int`(): Unit = if (!ch('0')) oneOrMoreDigits() else sb.append('0')
+  private def `frac`(): Unit = if (ch('.')) {
+    sb.append('.')
+    oneOrMoreDigits()
+  }
+  private def `exp`(): Unit = if (ch('e') || ch('E')) {
+    if (ch('-')) {
+      sb.append("e-")
+    } else if (ch('+')) {
+      sb.append("e+")
+    } else {
+      sb.append('e')
+    }
+    oneOrMoreDigits()
+  }
+
+  private def oneOrMoreDigits(): Unit = if (DIGIT()) zeroOrMoreDigits() else fail("DIGIT")
+  @tailrec private def zeroOrMoreDigits(): Unit = if (DIGIT()) {
+    sb.append(cursorChar)
+    advance()
+    zeroOrMoreDigits()
+  }
+
+  private def DIGIT(): Boolean = cursorChar >= '0' && cursorChar <= '9'
+
+  /** Skips all whitespace under the cursor. */
+  private def ws(): Unit =
+    // fast test whether cursorChar is one of " \n\r\t"
+    while (((1L << cursorChar) & ((cursorChar - 64) >> 31) & 0x100002600L) != 0L) { advance() }
+
+  ////////////////////////// PRIVATE HELPERS ////////////////////////////
+  private def appendSB(c: Char): Boolean = { sb.append(c); true }
+
+  ////////////////////////// PROTECTED HELPERS //////////////////////////
+
+  private def ch(c: Char): Boolean = if (cursorChar == c) { advance(); true } else false
+  private def ws(c: Char): Boolean = if (ch(c)) { ws(); true } else false
+  private def advance(): Boolean = { cursorChar = input.nextChar(); true }
+  private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
+
+  private def fail(target: String): Nothing = {
+    val ParserInput.Line(lineNr, col, text) = input.currLine
+    val summary = {
+      val unexpected =
+        if (cursorChar != EOI) {
+          val c = if (Character.isISOControl(cursorChar)) "\\u%04x" format cursorChar.toInt else cursorChar.toString
+          s"character '$c'"
+        } else "end-of-input"
+      s"Unexpected $unexpected at (line $lineNr, position $col), expected $target"
+    }
+    val detail = {
+      val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
+      s"\n$sanitizedText\n${" " * (col - 1)}^\n"
+    }
     if (detail.isEmpty) {
       deserializationError(s"$summary")
     } else {
       deserializationError(s"$summary:$detail")
     }
   }
+
+  // End-of-input sigil, forced to a compile-time constant.
+  private final val EOI = '\uFFFF'
+
+  /** The mapping of object keys to handler functions for the current object. */
+  private var fieldValueHolders: mutable.Map[String, ObjectValue[_]] = _
 
   /** Starts a parse. */
   private[reming] def start(): Unit = advance()
@@ -107,10 +240,30 @@ class JsonParser(input: ParserInput) extends ParserBase(input) {
     }
   }
 
+  def readInt(): Int = {
+    sb.setLength(0)
+    if (ch('-')) {
+      sb.append('-')
+    }
+    `int`()
+    ws()
+    sb.toString.toInt
+  }
+
+  def readLong(): Long = {
+    sb.setLength(0)
+    if (ch('-')) {
+      sb.append('-')
+    }
+    `int`()
+    ws()
+    sb.toString.toLong
+  }
+
   /** Reads a number from the stream. */
   def readNumber(): BigDecimal = {
     (cursorChar: @switch) match {
-      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => number()
+      case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => `number`()
       case _ => fail("start of number literal")
     }
   }

@@ -41,9 +41,8 @@ trait CollectionFormats { self: StandardFormats =>
   }
 
   /** Serializes any other map a JS array. */
-  implicit def anyMapFormat[K : JsonFormat, V : JsonFormat] = {
+  implicit def anyMapFormat[K : JsonFormat, V : JsonFormat] =
     viaSeq[Map[K, V], (K, V)](seq => Map(seq: _*))
-  }
 
   implicit def listFormat[T : JsonFormat] = viaSeq[List[T], T](seq => List(seq: _*))
 
@@ -52,34 +51,26 @@ trait CollectionFormats { self: StandardFormats =>
 
   implicit def immIterableFormat[T : JsonFormat] =
     viaSeq[imm.Iterable[T], T](seq => imm.Iterable(seq :_*))
-  implicit def immSeqFormat[T : JsonFormat] =
-    viaSeq[imm.Seq[T], T](seq => imm.Seq(seq :_*))
+  implicit def immSeqFormat[T : JsonFormat] = viaSeq[imm.Seq[T], T](seq => imm.Seq(seq :_*))
   implicit def immIndexedSeqFormat[T : JsonFormat] =
     viaSeq[imm.IndexedSeq[T], T](seq => imm.IndexedSeq(seq :_*))
   implicit def immLinearSeqFormat[T : JsonFormat] =
     viaSeq[imm.LinearSeq[T], T](seq => imm.LinearSeq(seq :_*))
-  implicit def immSetFormat[T : JsonFormat] =
-    viaSeq[imm.Set[T], T](seq => imm.Set(seq :_*))
+  implicit def immSetFormat[T : JsonFormat] = viaSeq[imm.Set[T], T](seq => imm.Set(seq :_*))
 
-  implicit def vectorFormat[T : JsonFormat] =
-    viaSeq[Vector[T], T](seq => Vector(seq: _*))
+  implicit def vectorFormat[T : JsonFormat] = viaSeq[Vector[T], T](seq => Vector(seq: _*))
 
   import collection._
 
   // Base collection iterables.
-  implicit def iterableFormat[T : JsonFormat] =
-    viaSeq[Iterable[T], T](seq => Iterable(seq: _*))
-  implicit def seqFormat[T : JsonFormat] =
-    viaSeq[Seq[T], T](seq => Seq(seq: _*))
+  implicit def iterableFormat[T : JsonFormat] = viaSeq[Iterable[T], T](seq => Iterable(seq: _*))
+  implicit def seqFormat[T : JsonFormat] = viaSeq[Seq[T], T](seq => Seq(seq: _*))
   implicit def indexedSeqFormat[T : JsonFormat] =
     viaSeq[IndexedSeq[T], T](seq => IndexedSeq(seq: _*))
-  implicit def linearSeqFormat[T : JsonFormat]  =
-    viaSeq[LinearSeq[T], T](seq => LinearSeq(seq :_*))
-  implicit def setFormat[T : JsonFormat] =
-    viaSeq[Set[T], T](seq => Set(seq :_*))
-  implicit def sortedMapFormat[K : JsonFormat : Ordering, V : JsonFormat] = {
+  implicit def linearSeqFormat[T : JsonFormat]  = viaSeq[LinearSeq[T], T](seq => LinearSeq(seq :_*))
+  implicit def setFormat[T : JsonFormat] = viaSeq[Set[T], T](seq => Set(seq :_*))
+  implicit def sortedMapFormat[K : JsonFormat : Ordering, V : JsonFormat] =
     viaSeq[SortedMap[K, V], (K, V)](seq => SortedMap(seq: _*))
-  }
 
   /** Writes any iterable I of T as a JS array.
     * @param builder factory method to build an I from Seq[T]

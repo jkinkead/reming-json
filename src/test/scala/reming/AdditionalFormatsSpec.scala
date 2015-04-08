@@ -32,7 +32,7 @@ class AdditionalFormatsSpec extends FlatSpec {
 
   object Parent {
     implicit val parentJsonFormat = parentFormat[Parent](
-      childFormat[Child1, Parent], childFormat[Child2, Parent]
+      childFormat[Child1, Parent], childFormat[Child2, Parent]("twoey")
     )
   }
 
@@ -44,7 +44,7 @@ class AdditionalFormatsSpec extends FlatSpec {
   }
 
   it should "serialize the second child class" in {
-    CompactPrinter.printToString(two) === """["Child2",{"b":"two","c":2}]"""
+    CompactPrinter.printToString(two) === """["twoey",{"b":"two","c":2}]"""
   }
 
   it should "read a serialized instance" in {

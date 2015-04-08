@@ -25,11 +25,11 @@ import scala.util.{ Failure, Success, Try }
   * for Right.  Tuple1 serializes as a direct literal, while Tuple{2-7} serialize as arrays.
   */
 trait StandardFormats { self: BasicFormats =>
-  private[reming] type JSF[T] = JsonFormat[T] // simple alias for reduced verbosity
+  private[reming] type JF[T] = JsonFormat[T] // simple alias for reduced verbosity
 
-  implicit def optionFormat[T : JSF] = new OptionFormat[T]
+  implicit def optionFormat[T : JF] = new OptionFormat[T]
 
-  class OptionFormat[T : JSF] extends JSF[Option[T]] {
+  class OptionFormat[T : JF] extends JF[Option[T]] {
     override def write(value: Option[T], printer: JsonPrinter): Unit = value match {
       case Some(v) => printer.print(v)
       case None => printer.printNull()
@@ -42,7 +42,7 @@ trait StandardFormats { self: BasicFormats =>
   }
 
   /** Format for Either. This is *NOT* compatible with spray-json. */
-  implicit def eitherFormat[A : JSF, B : JSF] = new JSF[Either[A, B]] {
+  implicit def eitherFormat[A : JF, B : JF] = new JF[Either[A, B]] {
     override def write(value: Either[A, B], printer: JsonPrinter): Unit = {
       printer.startArray()
       value match {
@@ -66,12 +66,12 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple1Format[A : JSF] = new JSF[Tuple1[A]] {
+  implicit def tuple1Format[A : JF] = new JF[Tuple1[A]] {
     override def write(value: Tuple1[A], printer: JsonPrinter): Unit = printer.print(value._1)
     override def read(parser: JsonParser) = Tuple1(parser.read[A])
   }
 
-  implicit def tuple2Format[A : JSF, B : JSF] = new JSF[(A, B)] {
+  implicit def tuple2Format[A : JF, B : JF] = new JF[(A, B)] {
     override def write(value: (A, B), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
@@ -85,7 +85,7 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple3Format[A : JSF, B : JSF, C : JSF] = new JSF[(A, B, C)] {
+  implicit def tuple3Format[A : JF, B : JF, C : JF] = new JF[(A, B, C)] {
     override def write(value: (A, B, C), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
@@ -100,7 +100,7 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple4Format[A : JSF, B : JSF, C : JSF, D : JSF] = new JSF[(A, B, C, D)] {
+  implicit def tuple4Format[A : JF, B : JF, C : JF, D : JF] = new JF[(A, B, C, D)] {
     override def write(value: (A, B, C, D), printer: JsonPrinter): Unit = {
       printer.startArray()
       printer.printArrayItem(value._1)
@@ -121,8 +121,8 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple5Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF] = {
-    new JSF[(A, B, C, D, E)] {
+  implicit def tuple5Format[A : JF, B : JF, C : JF, D : JF, E : JF] = {
+    new JF[(A, B, C, D, E)] {
       override def write(value: (A, B, C, D, E), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)
@@ -146,8 +146,8 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple6Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF, F : JSF] = {
-    new JSF[(A, B, C, D, E, F)] {
+  implicit def tuple6Format[A : JF, B : JF, C : JF, D : JF, E : JF, F : JF] = {
+    new JF[(A, B, C, D, E, F)] {
       override def write(value: (A, B, C, D, E, F), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)
@@ -173,8 +173,8 @@ trait StandardFormats { self: BasicFormats =>
     }
   }
 
-  implicit def tuple7Format[A : JSF, B : JSF, C : JSF, D : JSF, E : JSF, F : JSF, G : JSF] = {
-    new JSF[(A, B, C, D, E, F, G)] {
+  implicit def tuple7Format[A : JF, B : JF, C : JF, D : JF, E : JF, F : JF, G : JF] = {
+    new JF[(A, B, C, D, E, F, G)] {
       override def write(value: (A, B, C, D, E, F, G), printer: JsonPrinter): Unit = {
         printer.startArray()
         printer.printArrayItem(value._1)

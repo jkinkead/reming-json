@@ -120,11 +120,11 @@ trait ProductFormats { this: StandardFormats =>
 
   // Case classes with 1 parameters
 
-  def jsonFormat1[P1 :JSF, T <: Product :ClassTag](construct: (P1) => T): JsonFormat[T] = {
+  def jsonFormat1[P1 :JF, T <: Product :ClassTag](construct: (P1) => T): JsonFormat[T] = {
     val Array(p1) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1)
   }
-  def jsonFormat[P1 :JSF, T <: Product](construct: (P1) => T, fieldName1: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, T <: Product](construct: (P1) => T, fieldName1: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -139,11 +139,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 2 parameters
 
-  def jsonFormat2[P1 :JSF, P2 :JSF, T <: Product :ClassTag](construct: (P1, P2) => T): JsonFormat[T] = {
+  def jsonFormat2[P1 :JF, P2 :JF, T <: Product :ClassTag](construct: (P1, P2) => T): JsonFormat[T] = {
     val Array(p1, p2) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, T <: Product](construct: (P1, P2) => T, fieldName1: String, fieldName2: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, T <: Product](construct: (P1, P2) => T, fieldName1: String, fieldName2: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -160,11 +160,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 3 parameters
 
-  def jsonFormat3[P1 :JSF, P2 :JSF, P3 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3) => T): JsonFormat[T] = {
+  def jsonFormat3[P1 :JF, P2 :JF, P3 :JF, T <: Product :ClassTag](construct: (P1, P2, P3) => T): JsonFormat[T] = {
     val Array(p1, p2, p3) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, T <: Product](construct: (P1, P2, P3) => T, fieldName1: String, fieldName2: String, fieldName3: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, T <: Product](construct: (P1, P2, P3) => T, fieldName1: String, fieldName2: String, fieldName3: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -183,11 +183,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 4 parameters
 
-  def jsonFormat4[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4) => T): JsonFormat[T] = {
+  def jsonFormat4[P1 :JF, P2 :JF, P3 :JF, P4 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, T <: Product](construct: (P1, P2, P3, P4) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, T <: Product](construct: (P1, P2, P3, P4) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -208,11 +208,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 5 parameters
 
-  def jsonFormat5[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5) => T): JsonFormat[T] = {
+  def jsonFormat5[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, T <: Product](construct: (P1, P2, P3, P4, P5) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -235,11 +235,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 6 parameters
 
-  def jsonFormat6[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6) => T): JsonFormat[T] = {
+  def jsonFormat6[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -264,11 +264,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 7 parameters
 
-  def jsonFormat7[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7) => T): JsonFormat[T] = {
+  def jsonFormat7[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -295,11 +295,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 8 parameters
 
-  def jsonFormat8[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8) => T): JsonFormat[T] = {
+  def jsonFormat8[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -328,11 +328,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 9 parameters
 
-  def jsonFormat9[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => T): JsonFormat[T] = {
+  def jsonFormat9[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -363,11 +363,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 10 parameters
 
-  def jsonFormat10[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => T): JsonFormat[T] = {
+  def jsonFormat10[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -400,11 +400,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 11 parameters
 
-  def jsonFormat11[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => T): JsonFormat[T] = {
+  def jsonFormat11[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -439,11 +439,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 12 parameters
 
-  def jsonFormat12[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => T): JsonFormat[T] = {
+  def jsonFormat12[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -480,11 +480,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 13 parameters
 
-  def jsonFormat13[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => T): JsonFormat[T] = {
+  def jsonFormat13[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -523,11 +523,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 14 parameters
 
-  def jsonFormat14[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => T): JsonFormat[T] = {
+  def jsonFormat14[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -568,11 +568,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 15 parameters
 
-  def jsonFormat15[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => T): JsonFormat[T] = {
+  def jsonFormat15[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -615,11 +615,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 16 parameters
 
-  def jsonFormat16[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => T): JsonFormat[T] = {
+  def jsonFormat16[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -664,11 +664,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 17 parameters
 
-  def jsonFormat17[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => T): JsonFormat[T] = {
+  def jsonFormat17[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -715,11 +715,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 18 parameters
 
-  def jsonFormat18[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => T): JsonFormat[T] = {
+  def jsonFormat18[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -768,11 +768,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 19 parameters
 
-  def jsonFormat19[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => T): JsonFormat[T] = {
+  def jsonFormat19[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -823,11 +823,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 20 parameters
 
-  def jsonFormat20[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => T): JsonFormat[T] = {
+  def jsonFormat20[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -880,11 +880,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 21 parameters
 
-  def jsonFormat21[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, P21 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21) => T): JsonFormat[T] = {
+  def jsonFormat21[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, P21 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, P21 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String, fieldName21: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, P21 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String, fieldName21: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
@@ -939,11 +939,11 @@ trait ProductFormats { this: StandardFormats =>
   }
   // Case classes with 22 parameters
 
-  def jsonFormat22[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, P21 :JSF, P22 :JSF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => T): JsonFormat[T] = {
+  def jsonFormat22[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, P21 :JF, P22 :JF, T <: Product :ClassTag](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => T): JsonFormat[T] = {
     val Array(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22) = ProductFormats.extractFieldNames(classTag[T])
     jsonFormat(construct, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22)
   }
-  def jsonFormat[P1 :JSF, P2 :JSF, P3 :JSF, P4 :JSF, P5 :JSF, P6 :JSF, P7 :JSF, P8 :JSF, P9 :JSF, P10 :JSF, P11 :JSF, P12 :JSF, P13 :JSF, P14 :JSF, P15 :JSF, P16 :JSF, P17 :JSF, P18 :JSF, P19 :JSF, P20 :JSF, P21 :JSF, P22 :JSF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String, fieldName21: String, fieldName22: String): JsonFormat[T] = new JsonFormat[T]{
+  def jsonFormat[P1 :JF, P2 :JF, P3 :JF, P4 :JF, P5 :JF, P6 :JF, P7 :JF, P8 :JF, P9 :JF, P10 :JF, P11 :JF, P12 :JF, P13 :JF, P14 :JF, P15 :JF, P16 :JF, P17 :JF, P18 :JF, P19 :JF, P20 :JF, P21 :JF, P22 :JF, T <: Product](construct: (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22) => T, fieldName1: String, fieldName2: String, fieldName3: String, fieldName4: String, fieldName5: String, fieldName6: String, fieldName7: String, fieldName8: String, fieldName9: String, fieldName10: String, fieldName11: String, fieldName12: String, fieldName13: String, fieldName14: String, fieldName15: String, fieldName16: String, fieldName17: String, fieldName18: String, fieldName19: String, fieldName20: String, fieldName21: String, fieldName22: String): JsonFormat[T] = new JsonFormat[T]{
     def write(p: T, printer: JsonPrinter): Unit = {
       printer.startObject()
       writeProductElement[P1](fieldName1, p, 0, printer)
