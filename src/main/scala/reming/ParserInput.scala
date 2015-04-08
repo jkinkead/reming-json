@@ -17,6 +17,7 @@
 
 package reming
 
+import java.lang.{ StringBuilder => JavaStringBuilder }
 import java.nio.{ CharBuffer, ByteBuffer }
 import java.nio.charset.Charset
 import scala.annotation.tailrec
@@ -32,7 +33,7 @@ trait ParserInput {
     */
   def nextUtf8Char(): Char
 
-  def currLine: ParserInput.Line
+  def currLine(currChar: Char): ParserInput.Line
 }
 
 object ParserInput {
@@ -43,20 +44,20 @@ object ParserInput {
   def apply(chars: Array[Char]): CharArrayBasedParserInput = new CharArrayBasedParserInput(chars)
   def apply(bytes: Array[Byte]): ByteArrayBasedParserInput = new ByteArrayBasedParserInput(bytes)
 
-  case class Line(lineNr: Int, column: Int, text: String)
+  case class Line(lineNr: Option[Int], column: Option[Int], text: String)
 
   /** Parent class for parser input with a numeric cursor. */
   abstract class DefaultParserInput extends ParserInput {
     protected var _cursor: Int = -1
     /** @return the line that encloses the given cursor index */
-    def currLine: Line = {
+    def currLine(currChar: Char): Line = {
       val index = _cursor
       val sb = new java.lang.StringBuilder
       @tailrec def rec(ix: Int, lineStartIx: Int, lineNr: Int): Line =
         nextUtf8Char() match {
           case '\n' if index > ix =>
             sb.setLength(0); rec(ix + 1, ix + 1, lineNr + 1)
-          case '\n' | EOI => Line(lineNr, index - lineStartIx + 1, sb.toString)
+          case '\n' | EOI => Line(Some(lineNr), Some(index - lineStartIx + 1), sb.toString)
           case c => sb.append(c); rec(ix + 1, lineStartIx, lineNr)
         }
       _cursor = -1
@@ -126,9 +127,20 @@ object ParserInput {
 
   /** Input wrapping a character iterator (like a Source). */
   class CharIteratorBasedParserInput(chars: Iterator[Char]) extends ParserInput {
-    override def currLine: Line = {
-      // TODO IMPLEMENT
-      Line(0, 0, "")
+    /** The maximum length of the debug line to return. */
+    val MaxLineLength = 50
+
+    /** Return up to MaxLineLength characters in the current line, without valid` or column
+      * counters.
+      */
+    override def currLine(currChar: Char): Line = {
+      var char = currChar
+      val buffer = new JavaStringBuilder()
+      while (char != EOI && buffer.length < MaxLineLength) {
+        buffer.append(char)
+        char = nextChar
+      }
+      Line(None, None, buffer.toString)
     }
     override def nextChar(): Char = {
       if (chars.hasNext) {

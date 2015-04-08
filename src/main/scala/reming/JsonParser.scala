@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015 by Jesse Kinkead
+ * Original implementation (C) 2011 Mathias Doenitz
+ * Adapted to reming in 2015 by Jesse Kinkead
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,18 +184,26 @@ class JsonParser(input: ParserInput) {
   private def require(c: Char): Unit = if (!ch(c)) fail(s"'$c'")
 
   private def fail(target: String): Nothing = {
-    val ParserInput.Line(lineNr, col, text) = input.currLine
+    val ParserInput.Line(lineNrOption, colOption, text) = input.currLine(cursorChar)
     val summary = {
       val unexpected =
         if (cursorChar != EOI) {
           val c = if (Character.isISOControl(cursorChar)) "\\u%04x" format cursorChar.toInt else cursorChar.toString
           s"character '$c'"
         } else "end-of-input"
-      s"Unexpected $unexpected at (line $lineNr, position $col), expected $target"
+      (lineNrOption, colOption) match {
+        case (Some(lineNr), Some(col)) =>
+          s"Unexpected $unexpected at (line $lineNr, position $col), expected $target"
+        case _ =>
+          s"Unexpected $unexpected, expected $target"
+      }
     }
     val detail = {
       val sanitizedText = text.map(c ⇒ if (Character.isISOControl(c)) '?' else c)
-      s"\n$sanitizedText\n${" " * (col - 1)}^\n"
+      colOption match {
+        case Some(col) => s"\n$sanitizedText\n${" " * (col - 1)}^\n"
+        case None => s"\n$sanitizedText\n"
+      }
     }
     if (detail.isEmpty) {
       deserializationError(s"$summary")
