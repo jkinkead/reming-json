@@ -15,15 +15,10 @@
  * limitations under the License.
  */
 
-package object reming {
-  def jsonReader[T](implicit reader: JsonReader[T]) = reader
-  def jsonWriter[T](implicit writer: JsonWriter[T]) = writer
-  def jsonFormat[T](implicit format: JsonFormat[T]) = format
+package reming
 
-  def deserializationError(msg: String, cause: Throwable = null) = throw new DeserializationException(msg, cause)
-  def serializationError(msg: String) = throw new SerializationException(msg)
-}
-package reming {
-  class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
-  class SerializationException(msg: String) extends RuntimeException(msg)
-}
+/** Exception thrown while reading JSON. */
+class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
+
+/** Exception thrown while writing JSON. */
+class SerializationException(msg: String) extends RuntimeException(msg)

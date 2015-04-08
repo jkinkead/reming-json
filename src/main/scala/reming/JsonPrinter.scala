@@ -38,7 +38,7 @@ abstract class JsonPrinter(writer: PrintWriter) {
 
   /** Write the given double, throwing a serialization exception if it is NaN or Infinity. */
   def printDouble(value: Double): Unit = if (value.isNaN || value.isInfinity) {
-    serializationError("can't serialize NaN or (+|-)Infinity")
+    throw new SerializationException("can't serialize NaN or (+|-)Infinity")
   } else {
     writer.print(BigDecimal(value))
   }

@@ -206,9 +206,9 @@ class JsonParser(input: ParserInput) {
       }
     }
     if (detail.isEmpty) {
-      deserializationError(s"$summary")
+      throw new DeserializationException(s"$summary")
     } else {
-      deserializationError(s"$summary:$detail")
+      throw new DeserializationException(s"$summary:$detail")
     }
   }
 

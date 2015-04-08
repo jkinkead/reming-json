@@ -28,7 +28,7 @@ private[reming] class ObjectValue[T](val key: String, handler: JsonReader[T]) {
 
   /** @throws DeserializationException if called before parsedValue is set */
   private def getParsedValue: Option[T] = parsedValue getOrElse {
-    deserializationError("Usage error: ParsedVal dereferenced before endObject")
+    throw new DeserializationException("Usage error: ParsedVal dereferenced before endObject")
   }
 
   /** Called when the parser sees the key this was registered for. */
@@ -48,7 +48,7 @@ private[reming] class ObjectValue[T](val key: String, handler: JsonReader[T]) {
     *     or if the value was missing from the object
     */
   def value: T = getParsedValue getOrElse {
-    deserializationError(s"Object missing required field '$key'")
+    throw new DeserializationException(s"Object missing required field '$key'")
   }
 
   /** Returns the wrapped value, if it was in the object, or None otherwise.

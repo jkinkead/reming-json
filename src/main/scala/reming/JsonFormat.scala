@@ -25,6 +25,9 @@ import annotation.implicitNotFound
 trait JsonReader[T] {
   /** Reads an instance of the given type out of the given parser. */
   def read(parser: JsonParser): T
+
+  def deserializationError(msg: String, cause: Throwable = null) =
+    throw new DeserializationException(msg, cause)
 }
 object JsonReader {
   /** Conversion to let any function be a JsonReader. */
@@ -38,6 +41,8 @@ object JsonReader {
 trait JsonWriter[T] {
   /** Write the given instance of T to the given writer. */
   def write(obj: T, printer: JsonPrinter): Unit
+
+  def serializationError(msg: String) = throw new SerializationException(msg)
 }
 object JsonWriter {
   /** Conversion to let any function be a JsonWriter. */
